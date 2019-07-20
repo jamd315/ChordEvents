@@ -1,5 +1,11 @@
 import json
-import unittest
+import os
+import sys
+import threading
+from collections import namedtuple
+
+import mido
+
 
 class Note:
     pitch_class_map = {  # Overflow is where octave changes
@@ -78,7 +84,8 @@ class Note:
 
 class Chord:
 
-    with open("chords.json", "r") as f:
+    _folder_context = os.path.split(__file__)[0]
+    with open(os.path.join(_folder_context, "chords.json"), "r") as f:
         chords = json.load(f)["chords"]
 
     def __init__(self, *args):
@@ -133,5 +140,65 @@ class Chord:
             raise ValueError("Illegal configuration of notes")
 
 
+class ChordEventLoop:
+    EventHandler = namedtuple("EventHandler", ["chord_name", "func"])
+
+    def __init__(self, verbose=False):
+        self.handlers = []
+        self._verbose = verbose
+        self._running = False
+        self._thread = None
+        if sys.platform == "win32":
+            mido.set_backend("mido.backends.pygame")  # Was easier to set up on windows
+        elif sys.platform == "linux":
+            mido.set_backend("mido.backends.rtmidi")  # Technically this is default
+
+    def on_chord(self, chord_name, func):
+        self.handlers.append(self.EventHandler(chord_name, func))
+
+    def start(self):
+        self._running = True
+        self._thread = threading.Thread(target=self._loop)
+        self._thread.start()
+
+    def stop(self):
+        self._running = False
+        self._thread.join()
+
+    def _loop(self):
+        down_notes = set()
+        with mido.open_input(mido.get_input_names()[0]) as inport:  # pylint:disable=E1101
+            while self._running:
+                for msg in inport.iter_pending():
+                    if msg.type == "note_on":
+                        if msg.velocity > 0:  # Down
+                            down_notes.add(msg.note)
+                            identified = Chord.from_midi_list(down_notes).identify()  # Only scans on key down to save CPU use
+                            if identified:
+                                for ident in identified:
+                                    for h in self.handlers:
+                                        if ident == h.chord_name:
+                                            self._start_handler(h.func)
+                                if self._verbose:
+                                    print(", ".join(identified))
+                        else:  # Up
+                            down_notes.remove(msg.note)
+            if self._verbose:
+                print("Loop exit")
+
+    @staticmethod
+    def _start_handler(func, *args, **kwargs):
+        t = threading.Thread(target=func, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+
+
+def main():
+    m = ChordEventLoop()
+    m.start()
+    input("Press enter to stop\n")
+    m.stop()
+
+
 if __name__ == "__main__":
-    unittest.main()  # TODO these got wiped out
+    main()
