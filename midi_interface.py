@@ -1,16 +1,10 @@
 import sys
-import time
 import threading
 from collections import namedtuple
 
 import mido
 
 from note import Note, Chord
-
-if sys.platform == "win32":
-    mido.set_backend("mido.backends.pygame")  # Was easier to set up on windows
-elif sys.platform == "linux":
-    mido.set_backend("mido.backends.rtmidi")  # Technically this is default
 
 
 class ChordEventLoop:
@@ -21,6 +15,10 @@ class ChordEventLoop:
         self._verbose = verbose
         self._running = False
         self._thread = None
+        if sys.platform == "win32":
+            mido.set_backend("mido.backends.pygame")  # Was easier to set up on windows
+        elif sys.platform == "linux":
+            mido.set_backend("mido.backends.rtmidi")  # Technically this is default
 
     def on_chord(self, chord_name, func):
         self.handlers.append(self.handler(chord_name, func))
