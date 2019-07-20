@@ -13,14 +13,7 @@ elif sys.platform == "linux":
     mido.set_backend("mido.backends.rtmidi")  # Technically this is default
 
 
-def _exec_callback(func, *args, **kwargs):
-    t = threading.Thread(target=func, args=args, kwargs=kwargs)
-    t.daemon = True
-    t.start()
-
-
 class ChordEventLoop:
-
     handler = namedtuple("Event Handler", ["chord_name", "func"])
 
     def __init__(self, verbose=False):
@@ -29,7 +22,7 @@ class ChordEventLoop:
         self._running = False
         self._thread = None
 
-    def add_handler(self, chord_name, func):
+    def on_chord(self, chord_name, func):
         self.handlers.append(self.handler(chord_name, func))
 
     def start(self):
@@ -54,13 +47,19 @@ class ChordEventLoop:
                                 for ident in identified:
                                     for h in self.handlers:
                                         if ident == h.chord_name:
-                                            _exec_callback(h.func)
+                                            self._start_handler(h.func)
                                 if self._verbose:
                                     print(", ".join(identified))
                         else:  # Up
                             down_notes.remove(msg.note)
             if self._verbose:
                 print("Loop exit")
+
+    @staticmethod
+    def _start_handler(func, *args, **kwargs):
+        t = threading.Thread(target=func, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
 
 
 def main():
