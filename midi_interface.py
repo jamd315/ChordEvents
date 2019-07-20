@@ -1,7 +1,6 @@
 import sys
 import time
 import threading
-import winsound
 from collections import namedtuple
 
 import mido
