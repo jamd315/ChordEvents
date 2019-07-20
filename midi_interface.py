@@ -19,18 +19,18 @@ def _exec_callback(func, *args, **kwargs):
     t.start()
 
 
-class MIDI_Callback:
+class ChordEventLoop:
 
-    callback = namedtuple("Callback", ["chord_name", "func"])
+    handler = namedtuple("Event Handler", ["chord_name", "func"])
 
     def __init__(self, verbose=False):
-        self.callbacks = []
+        self.handlers = []
         self._verbose = verbose
         self._running = False
         self._thread = None
 
-    def add_callback(self, chord_name, func):
-        self.callbacks.append(self.callback(chord_name, func))
+    def add_handler(self, chord_name, func):
+        self.handlers.append(self.handler(chord_name, func))
 
     def start(self):
         self._running = True
@@ -52,17 +52,19 @@ class MIDI_Callback:
                             identified = Chord.from_midi_list(down_notes).identify()  # Only scans on key down to save CPU use
                             if identified:
                                 for ident in identified:
-                                    for cb in self.callbacks:
-                                        if ident == cb.chord_name:
-                                            _exec_callback(cb.func)
-                                print(", ".join(identified))
+                                    for h in self.handlers:
+                                        if ident == h.chord_name:
+                                            _exec_callback(h.func)
+                                if self._verbose:
+                                    print(", ".join(identified))
                         else:  # Up
                             down_notes.remove(msg.note)
-            print("Loop exit")
+            if self._verbose:
+                print("Loop exit")
 
 
 def main():
-    m = MIDI_Callback()
+    m = ChordEventLoop()
     m.start()
     input("Press enter to stop\n")
     m.stop()
