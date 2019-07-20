@@ -3,17 +3,17 @@ import unittest
 
 class Note:
     pitch_class_map = {  # Overflow is where octave changes
-        0: 'C', 
-        1: 'C#', 
-        2: 'D', 
-        3: 'D#', 
-        4: 'E', 
-        5: 'F', 
-        6: 'F#', 
-        7: 'G', 
-        8: 'G#', 
-        9: 'A', 
-        10: 'A#', 
+        0: 'C',
+        1: 'C#',
+        2: 'D',
+        3: 'D#',
+        4: 'E',
+        5: 'F',
+        6: 'F#',
+        7: 'G',
+        8: 'G#',
+        9: 'A',
+        10: 'A#',
         11: 'B'
     }
     pitch_class_map_complement = {j: i for i, j in pitch_class_map.items()}
@@ -33,7 +33,7 @@ class Note:
 
     def __gt__(self, other):
         return self.midi > other.midi
-    
+
     @classmethod
     def from_midi(cls, m):
         """Accepts MIDI note number"""
@@ -45,7 +45,7 @@ class Note:
         """Accepts note (note character) and octave"""
         midi = cls._note_octave_to_midi(note, octave)
         return cls(note, octave, midi)
-    
+
     @classmethod
     def from_ascii(cls, string):
         """Accepts the str representation of a note, e.g. A0, C#4, Bb6"""
@@ -88,7 +88,7 @@ class Chord:
 
     def __repr__(self):
         return "Chord(" + ", ".join(str(x) for x in self.notes) + ")"
-    
+
     def __str__(self):
         return repr(self)
 
@@ -104,19 +104,19 @@ class Chord:
                 if my_semitones == chord_semitones:
                     out.append(base + " " + chord["name"])
         return out
-    
+
     def _get_semitones(self):
         semitones = []
         for note in self.notes:
             semitones.append(note.midi - self.notes[0].midi)
         return semitones
-    
+
     @classmethod
     def from_ascii(cls, note_string):
         """Space or comma-space separated list of notes"""
         note_string = note_string.replace(",", "")
         return cls([Note.from_ascii(x) for x in note_string.split(" ")])
-    
+
     @classmethod
     def from_midi_list(cls, midi_list):
         """List of integer midi note codes"""

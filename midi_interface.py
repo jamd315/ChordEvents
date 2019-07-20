@@ -26,7 +26,7 @@ class MIDI_Callback:
         self._running = True
         self._thread = threading.Thread(target=self._loop)
         self._thread.start()
-    
+
     def stop(self):
         self._running = False
         self._thread.join()
@@ -66,3 +66,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
