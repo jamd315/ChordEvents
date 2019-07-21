@@ -1,0 +1,5 @@
+ChordEvent API reference
+========================
+
+.. automodule:: ChordEvents
+    :members:

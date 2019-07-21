@@ -8,6 +8,22 @@ import mido
 
 
 class Note:
+    """Represents a single note.
+
+    Typically created using ``from_midi()``, ``from_note_octave()``, or ``from_ascii()``, but can also be created if you already know the note, it's octave, and the midi number for the note.
+
+    Attributes:
+        note: The note letter, e.g. 'A' or 'F'
+        pc: Pitch class, see https://en.wikipedia.org/wiki/Pitch_class#Integer_notation
+        octave: Octave number for the note
+        midi: MIDI note number
+        freq: Frequency of the note in Hz
+    
+    Args:
+        note (str): See ``note`` attribute
+        octave (int): See ``octave`` attribute
+        midi (int): See ``midi`` attribute
+    """
     pitch_class_map = {  # Overflow is where octave changes
         0: 'C',
         1: 'C#',
@@ -25,8 +41,8 @@ class Note:
     pitch_class_map_complement = {j: i for i, j in pitch_class_map.items()}
 
     def __init__(self, note, octave, midi):
-        self.note = note  # Note character, eg 'A' or 'F'
-        self.pc = self.pitch_class_map_complement[note]  # Pitch class https://en.wikipedia.org/wiki/Pitch_class#Integer_notation
+        self.note = note
+        self.pc = self.pitch_class_map_complement[note]
         self.octave = octave
         self.midi = midi
         self.freq = 27.5 * 2 ** ((self.midi-21)/21)  # In Hz
@@ -42,21 +58,34 @@ class Note:
 
     @classmethod
     def from_midi(cls, m):
-        """Accepts MIDI note number"""
+        """Used to create a new ``Note`` object when you only have the MIDI number
+
+        Args:
+            m: See ``midi`` attribute
+        """
         note, octave = cls._midi_to_note_octave(m)
         return cls(note, octave, m)
 
     @classmethod
     def from_note_octave(cls, note, octave):
-        """Accepts note (note character) and octave"""
+        """Used to create a new ``Note`` object when you don't know the MIDI number
+        
+        Args:
+            note: See ``note`` attribute
+            octave: See ``octave attribute``
+        """
         midi = cls._note_octave_to_midi(note, octave)
         return cls(note, octave, midi)
 
     @classmethod
-    def from_ascii(cls, string):
-        """Accepts the str representation of a note, e.g. A0, C#4, Bb6"""
-        note = string[:-1]
-        octave = int(string[-1])
+    def from_ascii(cls, note_ascii):
+        """Used to create a new ``Note`` object with an ASCII representation of the note, e.g. A0, C#3, or Bb4
+        
+        Args:
+            note_ascii: string with ASCII representation of note
+        """
+        note = note_ascii[:-1]
+        octave = int(note_ascii[-1])
         if note[-1] == "b":  # Flat, convert to sharp
             pc = cls.pitch_class_map_complement[note[0]] - 1
             if pc == -1:  # Underflow
@@ -83,13 +112,18 @@ class Note:
 
 
 class Chord:
+    """Contains Note objects, as well as functions to analyze chords.  Accepts either a single list/tuple of notes, or a bunch of notes.  Typically contructed using ``from_ascii()`` or ``from_midi_list()``.
 
-    _folder_context = os.path.split(__file__)[0]
-    with open(os.path.join(_folder_context, "chords.json"), "r") as f:
+    Attributes:
+        notes: List of ``Note`` objects
+
+    Args:
+        args: List of ``Note`` objects or multiple ``Note`` objects passed to constructor.
+    """
+    with open(os.path.join(os.path.split(__file__)[0], "chords.json"), "r") as f:
         chords = json.load(f)["chords"]
-
+        
     def __init__(self, *args):
-        """Accepts either a list/tuple of notes, or a bunch of notes"""
         self.notes = self._parse_note_args(args)
         self.notes = sorted(self.notes)
 
@@ -100,6 +134,11 @@ class Chord:
         return repr(self)
 
     def identify(self):
+        """Identify what chord this is.  Most chords from this list are valid.  https://en.wikipedia.org/wiki/List_of_chords
+        
+        Return:
+            Name of chord in format "note_ascii chord_name", e.g. "C4 Major"
+        """
         try:
             base = str(self.notes[0])
         except IndexError:
@@ -120,13 +159,19 @@ class Chord:
 
     @classmethod
     def from_ascii(cls, note_string):
-        """Space or comma-space separated list of notes"""
+        """Used to create a ``Chord`` from a string of notes.
+        
+        Args:
+            note_string: Space or comma-space separated ASCII notes"""
         note_string = note_string.replace(",", "")
         return cls([Note.from_ascii(x) for x in note_string.split(" ")])
 
     @classmethod
     def from_midi_list(cls, midi_list):
-        """List of integer midi note codes"""
+        """Used to create a ``Chord`` from a list of MIDI codes
+        
+        Args:
+            midi_list: List of integers represnting MIDI note codes"""
         return cls([Note.from_midi(x) for x in midi_list])
 
     @staticmethod
@@ -141,8 +186,16 @@ class Chord:
 
 
 class ChordEventLoop:
+    """The event loop that watches for chords and calls the event handlers
+    
+    Args:
+        verbose:  Boolean used to control whether to print a bunch of extra stuff
+    
+    TODO:
+        Need a way to remove specific event handlers
+    """
     EventHandler = namedtuple("EventHandler", ["chord_name", "func"])
-
+    """Used to represent an event handler."""
     def __init__(self, verbose=False):
         self.handlers = []
         self._verbose = verbose
@@ -153,20 +206,43 @@ class ChordEventLoop:
         elif sys.platform == "linux":
             mido.set_backend("mido.backends.rtmidi")  # Technically this is default
 
-    def on_chord(self, chord_name, func):
+    def on_chord(self, chord_name):
+        """Decorator function similar to ``add_chord_handler``"""
+        def _on_chord_sub(func):
+            self.add_chord_handler(func, chord_name)
+            return func
+        return _on_chord_sub
+
+    def add_chord_handler(self, func, chord_name):
+        """Create a new event handler that runs the function when a chord is pressed
+        
+        Args:
+            chord_name: Chord name, as output from ``Chord.identify()``
+            func: Function to call when the chord is detected.  Will be spawned in a new daemon thread.
+        """
         self.handlers.append(self.EventHandler(chord_name, func))
+    
+    def clear_handlers(self):
+        """Clear all chord handlers"""
+        self.handlers = []
 
     def start(self):
+        """Start the main loop, required to process MIDI and trigger event handlers.  Loop can be stopped with ``stop()``."""
         self._running = True
         self._thread = threading.Thread(target=self._loop)
         self._thread.start()
 
     def stop(self):
+        """Stop the main loop.  Loop can be restarted with ``start()`` after being stopped."""
         self._running = False
         self._thread.join()
 
     def _loop(self):
         down_notes = set()
+        try:
+            input_name = mido.get_input_names()[0]  # TODO should have a config to manually pick this
+        except IndexError:
+            raise RuntimeError("Didn't find any MIDI inputs")
         with mido.open_input(mido.get_input_names()[0]) as inport:  # pylint:disable=E1101
             while self._running:
                 for msg in inport.iter_pending():
