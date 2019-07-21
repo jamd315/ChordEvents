@@ -12,7 +12,7 @@ def my_event_handler():
     print("did a thing")
 
 @CEL.on_chord("C4 Major")
-def stop_CEL(CEL):
+def stop_CEL():
     CEL.stop()
 
 CEL.start(blocking=True)
