@@ -226,11 +226,17 @@ class ChordEventLoop:
         """Clear all chord handlers"""
         self.handlers = []
 
-    def start(self):
-        """Start the main loop, required to process MIDI and trigger event handlers.  Loop can be stopped with ``stop()``."""
+    def start(self, blocking=False):
+        """Start the main loop, required to process MIDI and trigger event handlers.  Loop can be stopped with ``stop()``.
+        
+        Args:
+            blocking: Default False.  Determines if this call will be blocking, requiring the ``stop()`` function to be called from an event handler."""
         self._running = True
         self._thread = threading.Thread(target=self._loop)
         self._thread.start()
+        if blocking:
+            self._thread.join()
+
 
     def stop(self):
         """Stop the main loop.  Loop can be restarted with ``start()`` after being stopped."""

@@ -11,6 +11,8 @@ def my_event_handler():
     time.sleep(5)
     print("did a thing")
 
-CEL.start()
-input("Press enter to stop\n")
-CEL.stop()
+@CEL.on_chord("C4 Major")
+def stop_CEL(CEL):
+    CEL.stop()
+
+CEL.start(blocking=True)
