@@ -1,0 +1,9 @@
+README.md
+setup.py
+ChordEvents/__init__.py
+ChordEvents/__version__.py
+ChordEvents.egg-info/PKG-INFO
+ChordEvents.egg-info/SOURCES.txt
+ChordEvents.egg-info/dependency_links.txt
+ChordEvents.egg-info/requires.txt
+ChordEvents.egg-info/top_level.txt

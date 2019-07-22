@@ -11,6 +11,7 @@ def my_event_handler():
     time.sleep(5)
     print("did a thing")
 
+
 @CEL.on_chord("C4 Major")
 def stop_CEL():
     CEL.stop()

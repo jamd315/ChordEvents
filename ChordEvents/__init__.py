@@ -6,6 +6,8 @@ from collections import namedtuple
 
 import mido
 
+name = "ChordEvents"  # For PyPi
+
 
 class Note:
     """Represents a single note.
