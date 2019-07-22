@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: ChordEvents
-Version: 0.1.0
+Version: 0.1.2
 Summary: Event loop that triggers functions when a chord is played on a MIDI controller.
 Home-page: https://github.com/jamd315/ChordEvents
 Author: jamd315
