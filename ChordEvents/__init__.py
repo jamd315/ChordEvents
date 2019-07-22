@@ -19,7 +19,7 @@ class Note:
         pc: Pitch class, see https://en.wikipedia.org/wiki/Pitch_class#Integer_notation
         octave: Octave number for the note
         midi: MIDI note number
-        freq: Frequency of the note in Hz
+        freq: Frequency of the note in Hz, might be broken
     
     Args:
         note (str): See ``note`` attribute
@@ -47,7 +47,7 @@ class Note:
         self.pc = self.pitch_class_map_complement[note]
         self.octave = octave
         self.midi = midi
-        self.freq = 27.5 * 2 ** ((self.midi-21)/21)  # In Hz
+        self.freq = 27.5 * 2 ** ((self.midi-21)/21)  # In Hz  TODO could be broken
 
     def __str__(self):
         return self.note + str(self.octave)

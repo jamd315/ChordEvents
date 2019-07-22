@@ -118,6 +118,9 @@ setup(
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
+    data_files=[
+        ('.', ['ChordEvents/chords.json'])
+    ],
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,

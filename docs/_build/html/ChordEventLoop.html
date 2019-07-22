@@ -14,6 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Chord class API reference" href="Chord.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -60,14 +61,8 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="ChordEvents.ChordEventLoop.clear_handlers">
-<code class="sig-name descname">clear_handlers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.ChordEventLoop.clear_handlers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clear all handlers created by <code class="docutils literal notranslate"><span class="pre">on_chord()</span></code></p>
-</dd></dl>
-
-<dl class="method">
-<dt id="ChordEvents.ChordEventLoop.on_chord">
-<code class="sig-name descname">on_chord</code><span class="sig-paren">(</span><em class="sig-param">chord_name</em>, <em class="sig-param">func</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.ChordEventLoop.on_chord" title="Permalink to this definition">¶</a></dt>
+<dt id="ChordEvents.ChordEventLoop.add_chord_handler">
+<code class="sig-name descname">add_chord_handler</code><span class="sig-paren">(</span><em class="sig-param">func</em>, <em class="sig-param">chord_name</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.ChordEventLoop.add_chord_handler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new event handler that runs the function when a chord is pressed</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -80,9 +75,26 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="ChordEvents.ChordEventLoop.clear_handlers">
+<code class="sig-name descname">clear_handlers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.ChordEventLoop.clear_handlers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear all chord handlers</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ChordEvents.ChordEventLoop.on_chord">
+<code class="sig-name descname">on_chord</code><span class="sig-paren">(</span><em class="sig-param">chord_name</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.ChordEventLoop.on_chord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator function similar to <code class="docutils literal notranslate"><span class="pre">add_chord_handler</span></code></p>
+</dd></dl>
+
+<dl class="method">
 <dt id="ChordEvents.ChordEventLoop.start">
-<code class="sig-name descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.ChordEventLoop.start" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><em class="sig-param">blocking=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.ChordEventLoop.start" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start the main loop, required to process MIDI and trigger event handlers.  Loop can be stopped with <code class="docutils literal notranslate"><span class="pre">stop()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>blocking</strong> – Default False.  Determines if this call will be blocking, requiring the <code class="docutils literal notranslate"><span class="pre">stop()</span></code> function to be called from an event handler.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -112,15 +124,22 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption"><span class="caption-text">Guides:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference docs:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Note.html">Note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Chord.html">Chord</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ChordEventLoop</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Chord.html" title="previous chapter">Chord class API reference</a></li>
   </ul></li>
 </ul>
 </div>
