@@ -203,10 +203,7 @@ class ChordEventLoop:
         self._verbose = verbose
         self._running = False
         self._thread = None
-        if sys.platform == "win32":
-            mido.set_backend("mido.backends.pygame")  # Was easier to set up on windows
-        elif sys.platform == "linux":
-            mido.set_backend("mido.backends.rtmidi")  # Technically this is default
+        mido.set_backend("mido.backends.pygame")  # TODO config this
 
     def on_chord(self, chord_name):
         """Decorator function similar to ``add_chord_handler``"""

@@ -22,14 +22,9 @@ REQUIRES_PYTHON = '>=3.6.0'
 VERSION = ''
 
 # What packages are required for this module to be executed?
-if sys.platform == "win32":
-    REQUIRED = [
-        'mido', 'pygame'
-    ]
-elif sys.platform == "linux":
-    REQUIRED = [
-        'mido', 'rtmidi'
-    ]
+REQUIRED = [
+    'mido', 'pygame'
+]
 
 # What packages are optional?
 EXTRAS = {
