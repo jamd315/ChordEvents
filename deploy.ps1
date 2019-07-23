@@ -62,6 +62,7 @@ $commit_msg = Read-Host
 .\docs\make.bat html
 if (-not $?) { 
     Write-Error "Failed when building documentation"
+    Start-Sleep 5
     exit 
 }
 
@@ -69,6 +70,7 @@ if (-not $?) {
 .\setup.py sdist bdist_wheel
 if (-not $?) { 
     Write-Error "Failed when building wheel"
+    Start-Sleep 5
     exit 
 }
 

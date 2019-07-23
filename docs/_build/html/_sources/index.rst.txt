@@ -1,10 +1,6 @@
 ChordEvents
-=======================================
-
-.. toctree::
-	:caption: Guides:
-
-	Quickstart <quickstart>
+===========
+See the readme at https://github.com/jamd315/ChordEvents/blob/master/README.md
 
 .. toctree::
 	:maxdepth: 2
