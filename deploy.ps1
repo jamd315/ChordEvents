@@ -84,9 +84,11 @@ else {
 
 # Do PyPi stuff
 if ($pypi -eq 1) {
+    Write-Output "`n`n`nStarting PyPi upload, may need to enter your username and password"
     python -m twine upload dist/*
 }
 elseif ($pypi -eq 2) {
+    Write-Output "`n`n`nStarting PyPi upload, may need to enter your username and password"
     python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 }
 elseif ($pypi -eq 3) {
