@@ -6,20 +6,12 @@ import unittest.mock
 
 from ChordEvents import LoopbackInput, ChordEventLoop, Chord, Note
 
-flag = False
-
-def toggle_flag():
-    global flag
-    flag = not flag
-    print("\n\n\nToggled\n\n\n")
-
 
 class test_ChordEventLoop(unittest.TestCase):
     def setUp(self):
         self.loopback = LoopbackInput()
         self.CEL = ChordEventLoop(port=self.loopback)
         self.CEL.start()
-        self.flag = False
 
     def tearDown(self):
         self.CEL.stop()

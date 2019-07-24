@@ -48,7 +48,7 @@ class Test_Chord(unittest.TestCase):
         self.assertEqual(Chord._get_semitones_from_chord_name("Augmented sixth"), [0, 6, 10])  # Multiple possible chord, should select 1st
     
     def test_parse_note_args(self):
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             Chord._parse_note_args(1)
         with self.assertRaises(TypeError):
             Chord._parse_note_args(tuple([1, 2]))
