@@ -153,13 +153,13 @@
 <h1>Note class API reference<a class="headerlink" href="#note-class-api-reference" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ChordEvents.Note">
-<em class="property">class </em><code class="sig-prename descclassname">ChordEvents.</code><code class="sig-name descname">Note</code><span class="sig-paren">(</span><em class="sig-param">note</em>, <em class="sig-param">octave</em>, <em class="sig-param">midi</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.Note" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ChordEvents.</code><code class="sig-name descname">Note</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">note_str=None</em>, <em class="sig-param">note=None</em>, <em class="sig-param">octave=None</em>, <em class="sig-param">midi=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.Note" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a single note.</p>
-<p>Typically created using <code class="docutils literal notranslate"><span class="pre">from_midi()</span></code>, <code class="docutils literal notranslate"><span class="pre">from_note_octave()</span></code>, or <code class="docutils literal notranslate"><span class="pre">from_ascii()</span></code>, but can also be created if you already know the note, it’s octave, and the midi number for the note.</p>
+<p>Can be created using keywords or implicitly.  1 string argument is mapped to <code class="docutils literal notranslate"><span class="pre">note_str</span></code>, 1 str and 1 int arguments are mapped to <code class="docutils literal notranslate"><span class="pre">note</span></code> and <code class="docutils literal notranslate"><span class="pre">octave</span></code>, 1 int argument is mapped to <code class="docutils literal notranslate"><span class="pre">midi</span></code>.</p>
 <dl class="attribute">
 <dt id="ChordEvents.Note.note">
 <code class="sig-name descname">note</code><a class="headerlink" href="#ChordEvents.Note.note" title="Permalink to this definition">¶</a></dt>
-<dd><p>The note letter, e.g. ‘A’ or ‘F’</p>
+<dd><p>The note letter, e.g. ‘A’ or ‘F#’</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -189,48 +189,13 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>note</strong> (<em>str</em>) – See <code class="docutils literal notranslate"><span class="pre">note</span></code> attribute</p></li>
-<li><p><strong>octave</strong> (<em>int</em>) – See <code class="docutils literal notranslate"><span class="pre">octave</span></code> attribute</p></li>
-<li><p><strong>midi</strong> (<em>int</em>) – See <code class="docutils literal notranslate"><span class="pre">midi</span></code> attribute</p></li>
+<li><p><strong>note_str</strong> – String with ASCII representation of note.  Can use sharp(#) and flat(b) accidentals.  e.g. Note(“A4”), Note(“C#2”)  Can’t be used with any other argument</p></li>
+<li><p><strong>note</strong> (<em>str</em>) – See <code class="docutils literal notranslate"><span class="pre">note</span></code> attribute, must be used with <code class="docutils literal notranslate"><span class="pre">octave</span></code> argument</p></li>
+<li><p><strong>octave</strong> (<em>int</em>) – See <code class="docutils literal notranslate"><span class="pre">octave</span></code> attribute, must be used with <code class="docutils literal notranslate"><span class="pre">note</span></code> argument</p></li>
+<li><p><strong>midi</strong> (<em>int</em>) – See <code class="docutils literal notranslate"><span class="pre">midi</span></code> attribute.  Can’t be used with any other argument.</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
-<dt id="ChordEvents.Note.from_ascii">
-<em class="property">classmethod </em><code class="sig-name descname">from_ascii</code><span class="sig-paren">(</span><em class="sig-param">note_ascii</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.Note.from_ascii" title="Permalink to this definition">¶</a></dt>
-<dd><p>Used to create a new <code class="docutils literal notranslate"><span class="pre">Note</span></code> object with an ASCII representation of the note, e.g. A0, C#3, or Bb4</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>note_ascii</strong> – string with ASCII representation of note</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="ChordEvents.Note.from_midi">
-<em class="property">classmethod </em><code class="sig-name descname">from_midi</code><span class="sig-paren">(</span><em class="sig-param">m</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.Note.from_midi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Used to create a new <code class="docutils literal notranslate"><span class="pre">Note</span></code> object when you only have the MIDI number</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>m</strong> – See <code class="docutils literal notranslate"><span class="pre">midi</span></code> attribute</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="ChordEvents.Note.from_note_octave">
-<em class="property">classmethod </em><code class="sig-name descname">from_note_octave</code><span class="sig-paren">(</span><em class="sig-param">note</em>, <em class="sig-param">octave</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.Note.from_note_octave" title="Permalink to this definition">¶</a></dt>
-<dd><p>Used to create a new <code class="docutils literal notranslate"><span class="pre">Note</span></code> object when you don’t know the MIDI number</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>note</strong> – See <code class="docutils literal notranslate"><span class="pre">note</span></code> attribute</p></li>
-<li><p><strong>octave</strong> – See <code class="docutils literal notranslate"><span class="pre">octave</span> <span class="pre">attribute</span></code></p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </div>

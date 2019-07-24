@@ -178,12 +178,37 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="ChordEvents.Chord.from_ident">
+<em class="property">classmethod </em><code class="sig-name descname">from_ident</code><span class="sig-paren">(</span><em class="sig-param">ident_chord_name</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.Chord.from_ident" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to create a <code class="docutils literal notranslate"><span class="pre">Chord</span></code> from an identified chord, e.g. ‘C4 Major.  Wraps <code class="docutils literal notranslate"><span class="pre">from_note_chord()</span></code>’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ident_chord_name</strong> – Chord name similar to what <code class="docutils literal notranslate"><span class="pre">Chord.identify</span></code> outputs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="ChordEvents.Chord.from_midi_list">
 <em class="property">classmethod </em><code class="sig-name descname">from_midi_list</code><span class="sig-paren">(</span><em class="sig-param">midi_list</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.Chord.from_midi_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Used to create a <code class="docutils literal notranslate"><span class="pre">Chord</span></code> from a list of MIDI codes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>midi_list</strong> – List of integers represnting MIDI note codes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ChordEvents.Chord.from_note_chord">
+<em class="property">classmethod </em><code class="sig-name descname">from_note_chord</code><span class="sig-paren">(</span><em class="sig-param">note_obj</em>, <em class="sig-param">chord_name</em><span class="sig-paren">)</span><a class="headerlink" href="#ChordEvents.Chord.from_note_chord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to create a <code class="docutils literal notranslate"><span class="pre">Chord</span></code> from a <code class="docutils literal notranslate"><span class="pre">Note</span></code> and a chord name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>note_obj</strong> – <code class="docutils literal notranslate"><span class="pre">Note</span></code> object representing the base note of the chord</p></li>
+<li><p><strong>chord_name</strong> – String name of chord, see names of chord in chords.json.  e.g. “Major”, or “Harmonic seventh”</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

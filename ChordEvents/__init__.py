@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import threading
+import queue
 from collections import namedtuple
 
 import mido
@@ -12,19 +13,20 @@ name = "ChordEvents"  # For PyPi
 class Note:
     """Represents a single note.
 
-    Typically created using ``from_midi()``, ``from_note_octave()``, or ``from_ascii()``, but can also be created if you already know the note, it's octave, and the midi number for the note.
+    Can be created using keywords or implicitly.  1 string argument is mapped to ``note_str``, 1 str and 1 int arguments are mapped to ``note`` and ``octave``, 1 int argument is mapped to ``midi``.
 
     Attributes:
-        note: The note letter, e.g. 'A' or 'F'
+        note: The note letter, e.g. 'A' or 'F#'
         pc: Pitch class, see https://en.wikipedia.org/wiki/Pitch_class#Integer_notation
         octave: Octave number for the note
         midi: MIDI note number
         freq: Frequency of the note in Hz, might be broken
     
     Args:
-        note (str): See ``note`` attribute
-        octave (int): See ``octave`` attribute
-        midi (int): See ``midi`` attribute
+        note_str: String with ASCII representation of note.  Can use sharp(#) and flat(b) accidentals.  e.g. Note("A4"), Note("C#2")  Can't be used with any other argument
+        note (str): See ``note`` attribute, must be used with ``octave`` argument
+        octave (int): See ``octave`` attribute, must be used with ``note`` argument
+        midi (int): See ``midi`` attribute.  Can't be used with any other argument.
     """
     pitch_class_map = {  # Overflow is where octave changes
         0: 'C',
@@ -42,11 +44,48 @@ class Note:
     }
     pitch_class_map_complement = {j: i for i, j in pitch_class_map.items()}
 
-    def __init__(self, note, octave, midi):
-        self.note = note
-        self.pc = self.pitch_class_map_complement[note]
-        self.octave = octave
-        self.midi = midi
+    def __init__(self, *args, note_str=None, note=None, octave=None, midi=None):
+        # Constructor pre-processing sets the same variables as passed to __init__ to let logic below finalize construction
+
+        # Implicit argument mapping
+        if len(args) == 1 and isinstance(args[0], str):
+            note_str = args[0]
+        elif len(args) == 1 and isinstance(args[0], int):
+            midi = args[0]
+        elif len(args) == 2 and isinstance(args[0], str) and isinstance(args[1], int):
+            note = args[0]
+            octave = args[1]
+        elif len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], str):  # Probably won't actually happen, Note(4, "A")
+            octave = args[0]
+            note = args[1]
+        
+        if note_str and any(x is not None for x in [note, octave, midi]):
+            raise TypeError("Passing both keyword arguments for note/octave/midi is not supported while using positional argument note_str")
+        
+        if note_str:  # Only supports single digit octave TODO
+            note = note_str[:-1]
+            try:
+                octave = int(note_str[-1])
+            except ValueError:
+                raise ValueError("Missing octave number in note_str, note_str should end with the octave number.")
+
+        if note is not None and octave is not None:  # From note and octave
+            if len(note) == 2 and note[-1] == "b":  # Flat, convert to sharp
+                pc = self.pitch_class_map_complement[note[0]] - 1  # Decrement pitch class
+                if pc == -1:  # Underflow
+                    note = "B"
+                    octave -= 1
+                else:
+                    note = self.pitch_class_map[pc]
+            self.note = note
+            self.octave = octave
+            self.midi = self._note_octave_to_midi(note, octave)
+        elif midi is not None:  # From MIDI
+            self.note, self.octave = self._midi_to_note_octave(midi)
+            self.midi = midi
+        else:
+            raise TypeError
+        self.pc = self.pitch_class_map_complement[self.note]
         self.freq = 27.5 * 2 ** ((self.midi-21)/21)  # In Hz  TODO could be broken
 
     def __str__(self):
@@ -57,49 +96,16 @@ class Note:
 
     def __gt__(self, other):
         return self.midi > other.midi
+    
+    def __eq__(self, other):
+        return self.midi == other.midi
 
-    @classmethod
-    def from_midi(cls, m):
-        """Used to create a new ``Note`` object when you only have the MIDI number
-
-        Args:
-            m: See ``midi`` attribute
-        """
-        note, octave = cls._midi_to_note_octave(m)
-        return cls(note, octave, m)
-
-    @classmethod
-    def from_note_octave(cls, note, octave):
-        """Used to create a new ``Note`` object when you don't know the MIDI number
-        
-        Args:
-            note: See ``note`` attribute
-            octave: See ``octave attribute``
-        """
-        midi = cls._note_octave_to_midi(note, octave)
-        return cls(note, octave, midi)
-
-    @classmethod
-    def from_ascii(cls, note_ascii):
-        """Used to create a new ``Note`` object with an ASCII representation of the note, e.g. A0, C#3, or Bb4
-        
-        Args:
-            note_ascii: string with ASCII representation of note
-        """
-        note = note_ascii[:-1]
-        octave = int(note_ascii[-1])
-        if note[-1] == "b":  # Flat, convert to sharp
-            pc = cls.pitch_class_map_complement[note[0]] - 1
-            if pc == -1:  # Underflow
-                note = "B"
-                octave -= 1
-            else:
-                note = cls.pitch_class_map[pc]
-        return cls.from_note_octave(note, octave)
 
     @classmethod
     def _note_octave_to_midi(cls, note, octave):
         """For use with the pitch_class_map class attribute"""
+        assert isinstance(note, str)
+        assert isinstance(octave, int)
         pc = cls.pitch_class_map_complement[note]
         midi = octave * 12 + pc + 12
         return midi
@@ -107,6 +113,7 @@ class Note:
     @classmethod
     def _midi_to_note_octave(cls, m):
         """For use with the pitch_class_map class attribute"""
+        assert isinstance(m, int)
         m -= 12  # C0 is midi 12
         octave, note = divmod(m, 12)
         note = cls.pitch_class_map[note]
@@ -134,6 +141,11 @@ class Chord:
 
     def __str__(self):
         return repr(self)
+    
+    def __eq__(self, other):
+        if len(self.notes) != len(other.notes):
+            return False
+        return all(x == y for x, y in zip(self.notes, other.notes))
 
     def identify(self):
         """Identify what chord this is.  Most chords from this list are valid.  https://en.wikipedia.org/wiki/List_of_chords
@@ -164,9 +176,33 @@ class Chord:
         """Used to create a ``Chord`` from a string of notes.
         
         Args:
-            note_string: Space or comma-space separated ASCII notes"""
+            note_string: Space or comma-space separated ASCII notes
+        """
         note_string = note_string.replace(",", "")
-        return cls([Note.from_ascii(x) for x in note_string.split(" ")])
+        return cls([Note(x) for x in note_string.split(" ")])
+    
+    @classmethod
+    def from_ident(cls, ident_chord_name):
+        """Used to create a ``Chord`` from an identified chord, e.g. 'C4 Major.  Wraps ``from_note_chord()``'
+
+        Args:
+            ident_chord_name: Chord name similar to what ``Chord.identify`` outputs.
+        """
+        base_note, *chord_name = ident_chord_name.split(" ")
+        base_note = Note(base_note)
+        chord_name = " ".join(chord_name).strip()
+        return cls.from_note_chord(base_note, chord_name)
+        
+    @classmethod
+    def from_note_chord(cls, note_obj, chord_name):
+        """Used to create a ``Chord`` from a ``Note`` and a chord name
+
+        Args:
+            note_obj: ``Note`` object representing the base note of the chord
+            chord_name: String name of chord, see names of chord in chords.json.  e.g. "Major", or "Harmonic seventh"
+        """
+        note_list = [Note(note_obj.midi + semitone) for semitone in cls._get_semitones_from_chord_name(chord_name)]
+        return cls(note_list)
 
     @classmethod
     def from_midi_list(cls, midi_list):
@@ -174,52 +210,83 @@ class Chord:
         
         Args:
             midi_list: List of integers represnting MIDI note codes"""
-        return cls([Note.from_midi(x) for x in midi_list])
+        return cls([Note(x) for x in midi_list])
+
+    @classmethod
+    def _get_semitones_from_chord_name(cls, chord_name):
+        """Return a the 1st semitone from the list of semitones in chords.json for a given chord name"""
+        for chord in cls.chords:
+            if chord_name == chord["name"]:
+                return chord["semitones"][0]
+        raise ValueError("Chord not found, see https://en.wikipedia.org/wiki/List_of_chords")
 
     @staticmethod
     def _parse_note_args(note_args):
-        """Process args into nice Note() list"""
-        if all(type(x) == Note for x in note_args):
-            return note_args
-        elif all(type(x) == Note for x in note_args[0]):
-            return note_args[0]
-        else:
-            raise ValueError("Illegal configuration of notes")
+        """Process args tuple into nice Note() list"""
+        assert isinstance(note_args, tuple)  # Needs to be passed the args tuple
+        try:
+            if all(type(x) == Note for x in note_args):
+                return note_args
+            elif all(type(x) == Note for x in note_args[0]):
+                return note_args[0]
+            else:
+                raise ValueError("Illegal configuration of notes")
+        except TypeError:
+            raise TypeError("Expected iterable of Notes")
 
 
 class ChordEventLoop:
     """The event loop that watches for chords and calls the event handlers
     
     Args:
+        port: ``mido`` port.  Default is "default", which gets the 1st port from ``mido.get_input_names()``
         verbose:  Boolean used to control whether to print a bunch of extra stuff
+    
+    Attributes:
+        down_notes: ``set()`` of down notes
+        handlers: list of handlers, see ``ChordEventLoop.EventHandler``
+        port: mido port being used
     
     TODO:
         Need a way to remove specific event handlers
     """
-    EventHandler = namedtuple("EventHandler", ["chord_name", "func"])
+
+    EventHandler = namedtuple("EventHandler", ["chord_obj", "func"])
     """Used to represent an event handler."""
-    def __init__(self, verbose=False):
+
+    def __init__(self, port="default", verbose=False):
         self.handlers = []
+        self.down_notes = set()
+        if port == "default":
+            self.port = mido.open_input(mido.get_input_names()[0])
+        elif isinstance(port, mido.ports.BasePort):
+            self.port = port
+        elif isinstance(port, str):
+            self.port = mido.open_input(port)
+        else:
+            raise ValueError("Expected mido port or string name compatible with ``mido.open_input()``")
         self._verbose = verbose
         self._running = False
         self._thread = None
         mido.set_backend("mido.backends.pygame")  # TODO config this
 
-    def on_chord(self, chord_name):
+    def on_chord(self, chord_obj):
         """Decorator function similar to ``add_chord_handler``"""
         def _on_chord_sub(func):
-            self.add_chord_handler(func, chord_name)
+            self.add_chord_handler(func, chord_obj)
             return func
         return _on_chord_sub
 
-    def add_chord_handler(self, func, chord_name):
+    def add_chord_handler(self, func, chord_obj):
         """Create a new event handler that runs the function when a chord is pressed
         
         Args:
-            chord_name: Chord name, as output from ``Chord.identify()``
+            chord_obj: Chord name as string, as output from ``Chord.identify()``, or ``Chord`` object
             func: Function to call when the chord is detected.  Will be spawned in a new daemon thread.
         """
-        self.handlers.append(self.EventHandler(chord_name, func))
+        if self._verbose:
+            print("Added handler for chord " + str(chord_obj))
+        self.handlers.append(self.EventHandler(chord_obj, func))
     
     def clear_handlers(self):
         """Clear all chord handlers"""
@@ -236,42 +303,79 @@ class ChordEventLoop:
         if blocking:
             self._thread.join()
 
-
     def stop(self):
         """Stop the main loop.  Loop can be restarted with ``start()`` after being stopped."""
         self._running = False
         self._thread.join()
+        self._thread = None
 
-    def _loop(self):
-        down_notes = set()
-        try:
-            input_name = mido.get_input_names()[0]  # TODO should have a config to manually pick this
-        except IndexError:
-            raise RuntimeError("Didn't find any MIDI inputs")
-        with mido.open_input(mido.get_input_names()[0]) as inport:  # pylint:disable=E1101
+    def _loop(self):  # TODO probably rewrite this whole tree
+        with self.port as inport:
             while self._running:
                 for msg in inport.iter_pending():
                     if msg.type == "note_on":
                         if msg.velocity > 0:  # Down
-                            down_notes.add(msg.note)
-                            identified = Chord.from_midi_list(down_notes).identify()  # Only scans on key down to save CPU use
+                            self.down_notes.add(msg.note)
+                            my_chord = Chord.from_midi_list(self.down_notes)
+                            identified = my_chord.identify()  # Only scans on key down to save CPU use
                             if identified:
                                 for ident in identified:
                                     for h in self.handlers:
-                                        if ident == h.chord_name:
-                                            self._start_handler(h.func)
+                                        if ident == h.chord_obj:
+                                            self._start_handler(h)
                                 if self._verbose:
                                     print(", ".join(identified))
+                            else:
+                                for h in self.handlers:
+                                    if isinstance(h.chord_obj, Chord) and h.chord_obj == my_chord:
+                                        self._start_handler(h)
                         else:  # Up
-                            down_notes.remove(msg.note)
+                            self.down_notes.remove(msg.note)
+                    elif msg.type == "note_off":  # Up
+                        self.down_notes.remove(msg.note)
             if self._verbose:
                 print("Loop exit")
 
-    @staticmethod
-    def _start_handler(func, *args, **kwargs):
-        t = threading.Thread(target=func, args=args, kwargs=kwargs)
+    def _start_handler(self, handler):
+        if self._verbose:
+            print("Triggered handler for chord " + str(handler.chord_obj))
+        t = threading.Thread(target=handler.func)
         t.daemon = True
         t.start()
+
+
+class LoopbackInput(mido.ports.BaseInput):
+    """Used for testing"""
+    def __init__(self, *args, **kwargs):
+        try:
+            if kwargs["verbose"]:
+                self.verbose = True
+        except KeyError:
+            self.verbose = False
+        super().__init__()
+    
+    def _open(self, **kwargs):
+        self._my_queue = queue.Queue()
+        if self.verbose:
+            print("Opened loopback port")
+    
+    def _close(self, **kwargs):
+        self._my_queue = queue.Queue()  # Clear it with a new queue
+        if self.verbose:
+            print("Closed loopback port")
+
+    def _receive(self, block=True):
+        if block:
+            return self._my_queue.get()
+        else:
+            try:
+                return self._my_queue.get(block=False)
+            except queue.Empty:
+                return
+    
+    def create_msg(self, msg):
+        """Sends a MIDI message to the port to be echoed to the """
+        self._my_queue.put(msg)
 
 
 def main():

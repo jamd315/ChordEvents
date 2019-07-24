@@ -32,10 +32,10 @@ $v = Get-VersionNumber
 Write-Output "Current version $($v.Major).$($v.Minor).$($v.Build).  Increment Major(1), Minor(2), Build(3), or skip this part(4)?"
 $user_input = Read-Host
 if ($user_input -eq 1) {
-    Set-VersionNumber ($v.Major + 1) $v.Minor $v.Build
+    Set-VersionNumber ($v.Major + 1) 0 0
 }
 elseif ($user_input -eq 2) {
-    Set-VersionNumber $v.Major ($v.Minor + 1) $v.Build
+    Set-VersionNumber $v.Major ($v.Minor + 1) 0
 }
 elseif ($user_input -eq 3) {
     Set-VersionNumber $v.Major $v.Minor ($v.Build + 1)
@@ -62,6 +62,14 @@ $commit_msg = Read-Host
 .\docs\make.bat html
 if (-not $?) { 
     Write-Error "Failed when building documentation"
+    Start-Sleep 5
+    exit 
+}
+
+# Run tests
+python -m unittest
+if (-not $?) { 
+    Write-Error "Failed tests"
     Start-Sleep 5
     exit 
 }
