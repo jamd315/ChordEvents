@@ -98,6 +98,8 @@ class Note:
         return self.midi > other.midi
     
     def __eq__(self, other):
+        if not isinstance(other, Note):
+            return False
         return self.midi == other.midi
 
 
