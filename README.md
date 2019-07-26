@@ -4,7 +4,17 @@ An easy to use library used to trigger functions when a chord is detected on a M
 ### Installation
 
 ```pip install ChordEvents```
-Automatically installs pygame and uses that as the backend for mido
+Uses python-rtmidi for the backend by default.  See https://spotlightkid.github.io/python-rtmidi/installation.html#requirements
+
+## Installing in Debian based Linux
+```
+sudo apt install build-essential python-dev python3-dev libasound2-dev libjack-jackd2-dev
+pip3 install python-rtmidi
+```
+
+## Installing on Windows
+Windows is trickier, see https://spotlightkid.github.io/python-rtmidi/install-windows.html.  Sometimes ```pip install python-rtmidi``` is all you need.
+
 
 ### Basic use
 ```python
