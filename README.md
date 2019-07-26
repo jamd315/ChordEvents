@@ -18,6 +18,8 @@ Windows is trickier, see https://spotlightkid.github.io/python-rtmidi/install-wi
 
 ### Basic use
 ```python
+import time
+
 import ChordEvents
 
 CEL = ChordEvents.ChordEventLoop()
