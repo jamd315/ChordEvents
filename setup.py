@@ -23,7 +23,7 @@ VERSION = ''
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'mido', 'pygame'
+    'mido', 'pygame', 'colorama'
 ]
 
 # What packages are optional?

@@ -1,7 +1,11 @@
 import json
+import logging
 import os
 
 from ChordEvents import Note
+
+logger = logging.getLogger("ChordEvents")
+
 
 class Chord:
     """Contains Note objects, as well as functions to analyze chords.  Accepts either a single list/tuple of notes, or a bunch of notes.  Typically contructed using ``from_ascii()`` or ``from_midi_list()``.

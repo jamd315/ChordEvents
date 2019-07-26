@@ -1,3 +1,4 @@
+import logging
 import os
 import threading
 from collections import namedtuple
@@ -5,6 +6,9 @@ from collections import namedtuple
 import mido
 
 from ChordEvents import Note, Chord
+
+logger = logging.getLogger("ChordEvents")
+
 
 class ChordEventLoop:
     """The event loop that watches for chords and calls the event handlers
@@ -26,7 +30,6 @@ class ChordEventLoop:
     """Used to represent an event handler."""
 
     def __init__(self, port="default", verbose=False):
-        mido.set_backend("mido.backends.pygame")  # TODO config this
         self.handlers = []
         self.down_notes = set()
         if port == "default":
@@ -77,7 +80,7 @@ class ChordEventLoop:
         Args:
             blocking: Default False.  Determines if this call will be blocking, requiring the ``stop()`` function to be called from an event handler."""
         self._running = True
-        self._thread = threading.Thread(target=self._loop)
+        self._thread = threading.Thread(target=self._loop, name="ChordEventLoop internal thread")
         self._thread.start()
         if blocking:
             self._thread.join()
