@@ -6,6 +6,10 @@ import unittest.mock
 
 from ChordEvents import LoopbackInput, ChordEventLoop, Chord, Note
 
+# Can run as low as 0.005, but lots of stdout content or other lag can cause problems.
+# Since it only delays once per test function, a higher value isn't too costly at this time.
+TEST_CHORD_DELAY = 0.05
+
 
 class test_ChordEventLoop(unittest.TestCase):
     def setUp(self):
@@ -38,7 +42,7 @@ class test_ChordEventLoop(unittest.TestCase):
         self.loopback.create_msg(mido.Message("note_on", note=67, velocity=0))
         
 
-        time.sleep(0.01)  # 10x the default polling speed
+        time.sleep(TEST_CHORD_DELAY)  # 10x the default polling speed
         self.assertFalse(self.CEL.down_notes)  # assert empty
         mock.assert_called()
         self.CEL.clear_handlers()
@@ -58,7 +62,7 @@ class test_ChordEventLoop(unittest.TestCase):
         self.loopback.create_msg(mido.Message("note_off", note=67))
         
 
-        time.sleep(0.01)
+        time.sleep(TEST_CHORD_DELAY)
         self.assertFalse(self.CEL.down_notes)  # assert empty
         mock.assert_called()
         self.CEL.clear_handlers()
@@ -77,6 +81,6 @@ class test_ChordEventLoop(unittest.TestCase):
         self.loopback.create_msg(mido.Message("note_off", note=40))
         self.loopback.create_msg(mido.Message("note_off", note=60))
     
-        time.sleep(0.01)
+        time.sleep(TEST_CHORD_DELAY)
         mock.assert_called()
         self.CEL.clear_handlers()

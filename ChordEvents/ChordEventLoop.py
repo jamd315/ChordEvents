@@ -7,7 +7,7 @@ import mido
 
 from ChordEvents import Note, Chord
 
-logger = logging.getLogger("ChordEvents")
+logger = logging.getLogger(__name__)
 
 
 class ChordEventLoop:
@@ -15,7 +15,6 @@ class ChordEventLoop:
     
     Args:
         port: ``mido`` port.  Default is "default", which gets the 1st port from ``mido.get_input_names()``
-        verbose:  Boolean used to control whether to print a bunch of extra stuff
     
     Attributes:
         down_notes: ``set()`` of down notes
@@ -29,7 +28,7 @@ class ChordEventLoop:
     EventHandler = namedtuple("EventHandler", ["chord_obj", "func"])
     """Used to represent an event handler."""
 
-    def __init__(self, port="default", verbose=False):
+    def __init__(self, port="default"):
         self.handlers = []
         self.down_notes = set()
         if port == "default":
@@ -43,12 +42,14 @@ class ChordEventLoop:
             self.port = mido.open_input(port)
         else:
             raise ValueError("Expected mido port or string name compatible with ``mido.open_input()``")
-        self._verbose = verbose
         self._running = False
         self._thread = None
+        logger.debug("Created new ChordEventLoop with __init__")
     
     def __del__(self):
-        self.stop()
+        if self._running:
+            logger.warning("__del__ used on a running loop, please stop() the ChordEventLoop before closing")
+            self.stop()
 
     def on_chord(self, chord_obj):
         """Decorator function similar to ``add_chord_handler``"""
@@ -64,14 +65,12 @@ class ChordEventLoop:
             chord_obj: Chord name as string, as output from ``Chord.identify()``, or ``Chord`` object
             func: Function to call when the chord is detected.  Will be spawned in a new daemon thread.
         """
-        if self._verbose:
-            print("Added handler for chord " + str(chord_obj))
+        logger.info("Added handler for chord {}".format(chord_obj))
         self.handlers.append(self.EventHandler(chord_obj, func))
     
     def clear_handlers(self):
         """Clear all chord handlers"""
-        if self._verbose:
-            print("Cleared handlers")
+        logger.info("Cleared handlers")
         self.handlers = []
 
     def start(self, blocking=False):
@@ -82,6 +81,7 @@ class ChordEventLoop:
         self._running = True
         self._thread = threading.Thread(target=self._loop, name="ChordEventLoop internal thread")
         self._thread.start()
+        logger.info("ChordEventLoop started")
         if blocking:
             self._thread.join()
 
@@ -93,6 +93,7 @@ class ChordEventLoop:
         except AttributeError:  # Already garbage collected
             pass
         self._thread = None
+        logger.info("ChordEventLoop stopped")
 
     def _loop(self):  # This is only necessary because pygame doesn't support callbacks.  TODO consider using rtmidi?
         with self.port as inport:
@@ -104,16 +105,17 @@ class ChordEventLoop:
         if msg.type == "note_on" and msg.velocity > 0:  # Key down
             self.down_notes.add(msg.note)
             self._check_handlers()
+            logger.debug("Note on")
         elif msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0):  # Key up
             self.down_notes.remove(msg.note)
+            logger.debug("Note off")
     
     def _check_handlers(self):
         test_chord = Chord.from_midi_list(self.down_notes)
         identified = test_chord.identify()
         for handler in self.handlers:
             if handler.chord_obj == test_chord or handler.chord_obj in identified:
-                if self._verbose:
-                    print("Triggered handler for chord " + str(handler.chord_obj))
+                logger.info("Triggered handler for chord {}".format(handler.chord_obj))
                 t = threading.Thread(target=handler.func)
                 t.daemon = True
                 t.start()

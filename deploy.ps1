@@ -67,7 +67,7 @@ if (-not $?) {
 }
 
 # Run tests
-python -m unittest
+python -m unittest -q
 if (-not $?) { 
     Write-Error "Failed tests"
     Start-Sleep 5

@@ -33,7 +33,7 @@ class ChordEventsLogFormatter(logging.Formatter):  # TODO I'm not sure if this g
             outstr += Fore.CYAN + Style.BRIGHT + Back.RED
         outstr += "[" + datetime.datetime.now().strftime("%H:%M:%S") + " " + threading.current_thread().name + " " + record.levelname + "]"
         outstr += Style.RESET_ALL
-        outstr += "\t"
+        outstr += "  "
         outstr += record.getMessage()
         return outstr
 

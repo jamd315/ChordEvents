@@ -1,6 +1,6 @@
 import logging
 
-logger = logging.getLogger("ChordEvents")
+logger = logging.getLogger(__name__)
 
 
 class Note:
@@ -56,6 +56,7 @@ class Note:
             raise TypeError("Passing both keyword arguments for note/octave/midi is not supported while using positional argument note_str")
         
         if note_str:  # Only supports single digit octave TODO
+            logger.debug("Note created using __init__ note_str")
             note = note_str[:-1]
             try:
                 octave = int(note_str[-1])
@@ -73,9 +74,11 @@ class Note:
             self.note = note
             self.octave = octave
             self.midi = self._note_octave_to_midi(note, octave)
+            logger.debug("Note created using __init__ note and octave")
         elif midi is not None:  # From MIDI
             self.note, self.octave = self._midi_to_note_octave(midi)
             self.midi = midi
+            logger.debug("Note created using __init__ MIDI")
         else:
             raise TypeError
         self.pc = self.pitch_class_map_complement[self.note]

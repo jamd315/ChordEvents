@@ -4,7 +4,7 @@ import os
 
 from ChordEvents import Note
 
-logger = logging.getLogger("ChordEvents")
+logger = logging.getLogger(__name__)
 
 
 class Chord:
@@ -22,6 +22,7 @@ class Chord:
     def __init__(self, *args):
         self.notes = self._parse_note_args(args)
         self.notes = sorted(self.notes)
+        logger.debug("Chord created using __init__")
 
     def __repr__(self):
         return "Chord(" + ", ".join(str(x) for x in self.notes) + ")"
@@ -52,6 +53,7 @@ class Chord:
             for chord_semitones in chord["semitones"]:
                 if my_semitones == chord_semitones:
                     out.append(base + " " + chord["name"])
+        logger.debug("identify found {} chords".format(len(out)))
         return out
 
     def _get_semitones(self):
@@ -68,6 +70,7 @@ class Chord:
             note_string: Space or comma-space separated ASCII notes
         """
         note_string = note_string.replace(",", "")
+        logger.debug("Chord created using from_ascii")
         return cls([Note(x) for x in note_string.split(" ")])
     
     @classmethod
@@ -80,6 +83,7 @@ class Chord:
         base_note, *chord_name = ident_chord_name.split(" ")
         base_note = Note(base_note)
         chord_name = " ".join(chord_name).strip()
+        logger.debug("Chord created using from_ident")
         return cls.from_note_chord(base_note, chord_name)
         
     @classmethod
@@ -91,6 +95,7 @@ class Chord:
             chord_name: String name of chord, see names of chord in chords.json.  e.g. "Major", or "Harmonic seventh"
         """
         note_list = [Note(note_obj.midi + semitone) for semitone in cls._get_semitones_from_chord_name(chord_name)]
+        logger.debug("Chord created using from_note_chord")
         return cls(note_list)
 
     @classmethod
@@ -99,6 +104,7 @@ class Chord:
         
         Args:
             midi_list: List of integers represnting MIDI note codes"""
+        logger.debug("Chord created using from_midi_list")
         return cls([Note(x) for x in midi_list])
 
     @classmethod
