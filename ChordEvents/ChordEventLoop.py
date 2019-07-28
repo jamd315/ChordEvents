@@ -5,6 +5,7 @@ from collections import namedtuple
 
 import mido
 
+import ChordEvents
 from ChordEvents import Note, Chord
 
 logger = logging.getLogger(__name__)
@@ -14,7 +15,7 @@ class ChordEventLoop:
     """The event loop that watches for chords and calls the event handlers
     
     Args:
-        port: ``mido`` port.  Default is "default", which gets the 1st port from ``mido.get_input_names()``
+        port: ``mido`` port.  Default is "default", which gets the 1st port from ``mido.get_input_names()``.  Also accepts strings as returned form ``mido.get_input_names()``.
     
     Attributes:
         down_notes: ``set()`` of down notes
@@ -42,13 +43,18 @@ class ChordEventLoop:
             self.port = mido.open_input(port)
         else:
             raise ValueError("Expected mido port or string name compatible with ``mido.open_input()``")
-        self.port.callback = self._mido_callback
-        self._running = False
-        self._thread = None
+        if ChordEvents.callbacks_supported():
+            self.port.callback = self._mido_callback
+        else:
+            self._running = False
+            self._thread = None
         logger.debug("Created new ChordEventLoop with __init__")
     
     def __del__(self):
-        self.stop()
+        if not ChordEvents.callbacks_supported():
+            self.stop()
+        if hasattr(self, "port") and isinstance(self.port, mido.ports.BasePort):
+            self.port.close()
 
     def on_chord(self, chord_obj):
         """Decorator function similar to ``add_chord_handler``"""
@@ -73,28 +79,34 @@ class ChordEventLoop:
         self.handlers = []
 
     def start(self, blocking=False):
-        """Start the main loop, required to process MIDI and trigger event handlers.  Loop can be stopped with ``stop()``.
+        """Only required when backend doesn't support callbacks.  Start the main loop, required to process MIDI and trigger event handlers.  Loop can be stopped with ``stop()``.
         
         Args:
             blocking: Default False.  Determines if this call will be blocking, requiring the ``stop()`` function to be called from an event handler."""
-        #self._running = True
-        #self._thread = threading.Thread(target=self._loop, name="ChordEventLoop internal thread")
-        #self._thread.start()
-        logger.info("ChordEventLoop started")
-        #if blocking:
-        #    self._thread.join()
+        if not ChordEvents.callbacks_supported():
+            self._running = True
+            self._thread = threading.Thread(target=self._loop, name="ChordEventLoop thread")
+            self._thread.start()
+            logger.info("ChordEventLoop thread started")
+            if blocking:
+                self._thread.join()
+        else:
+            logger.warn("Called start() while using a backend that supports callbacks.")
 
     def stop(self):
-        """Stop the main loop.  Loop can be restarted with ``start()`` after being stopped."""
-        #self._running = False
-        #try:
-        #    self._thread.join()
-        #except AttributeError:  # Already garbage collected
-        #    pass
-        #self._thread = None
-        logger.info("ChordEventLoop stopped")
+        """Only required when backend doesn't support callbacks.  Stop the main loop.  Loop can be restarted with ``start()`` after being stopped."""
+        if not ChordEvents.callbacks_supported():
+            self._running = False
+            try:
+                self._thread.join()
+            except AttributeError:  # Already garbage collected
+                pass
+            self._thread = None
+            logger.info("ChordEventLoop thread stopped")
+        else:
+            logger.warn("Called stop() while using a backend that supports callbacks.")
 
-    def _loop(self):  # This is only necessary because pygame doesn't support callbacks.  TODO consider using rtmidi?
+    def _loop(self):
         while self._running:
             for msg in self.port.iter_pending():
                 self._mido_callback(msg)

@@ -9,3 +9,4 @@ See the readme at https://github.com/jamd315/ChordEvents/blob/master/README.md
 	Note <Note>
 	Chord <Chord>
 	ChordEventLoop <ChordEventLoop>
+	LoopbackPort <LoopbackPort>

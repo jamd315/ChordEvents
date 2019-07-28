@@ -27,6 +27,7 @@ Windows is trickier, see [the python-rtmidi Windows install instructions](https:
 ```python
 import time
 
+import mido
 import ChordEvents
 
 CEL = ChordEvents.ChordEventLoop()
@@ -36,15 +37,8 @@ CEL = ChordEvents.ChordEventLoop()
 # https://en.wikipedia.org/wiki/List_of_chords
 @CEL.on_chord("C4 Major")
 def do_work():
-    print("Doing work...")
-    time.sleep(5)
-    print("Did work")
+    print("Did a thing")
 
-
-# There's also a blocking version, CEL.start(blocking=True)
-# Make sure to have an event handler or separate thread that can call CEL.stop()
-CEL.start()
-input("Press enter to stop\n")
-CEL.stop()
+input("This is a blocking function so that the script doesn't end.\n")
 
 ```

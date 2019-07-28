@@ -10,10 +10,10 @@ from ChordEvents.__version__ import __version__
 from ChordEvents.Note import Note
 from ChordEvents.Chord import Chord
 from ChordEvents.ChordEventLoop import ChordEventLoop
-from ChordEvents.LoopbackInput import LoopbackInput
+from ChordEvents.LoopbackPort import LoopbackPort  # Depends on the backend being loaded
 
-mido.set_backend("mido.backends.rtmidi")  # TODO config this
 colorama.init()
+
 
 class ChordEventsLogFormatter(logging.Formatter):  # TODO I'm not sure if this goes in __init__, but it works for now.
     """More colorful formatting with time and thread"""
@@ -44,9 +44,17 @@ sh.setFormatter(ChordEventsLogFormatter)
 logger.addHandler(sh)
 
 
+mido.set_backend(load=True)
+def callbacks_supported():
+    mido.backend.load()
+    return hasattr(mido.backend._module.Input, "callback")  # Depends on the backend being loaded
+
+logger.info("Using backend '{}' from either default or environment variable.  Backed {} callbacks.".format(mido.backend.name, ("supports" if callbacks_supported() else "does not support")))
+
+
 __all__ = [
     "Note",
     "Chord",
     "ChordEventLoop",
-    "LoopbackInput"
+    "LoopbackPort"
 ]
