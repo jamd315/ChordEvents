@@ -42,14 +42,13 @@ class ChordEventLoop:
             self.port = mido.open_input(port)
         else:
             raise ValueError("Expected mido port or string name compatible with ``mido.open_input()``")
+        self.port.callback = self._mido_callback
         self._running = False
         self._thread = None
         logger.debug("Created new ChordEventLoop with __init__")
     
     def __del__(self):
-        if self._running:
-            logger.warning("__del__ used on a running loop, please stop() the ChordEventLoop before closing")
-            self.stop()
+        self.stop()
 
     def on_chord(self, chord_obj):
         """Decorator function similar to ``add_chord_handler``"""
@@ -78,28 +77,27 @@ class ChordEventLoop:
         
         Args:
             blocking: Default False.  Determines if this call will be blocking, requiring the ``stop()`` function to be called from an event handler."""
-        self._running = True
-        self._thread = threading.Thread(target=self._loop, name="ChordEventLoop internal thread")
-        self._thread.start()
+        #self._running = True
+        #self._thread = threading.Thread(target=self._loop, name="ChordEventLoop internal thread")
+        #self._thread.start()
         logger.info("ChordEventLoop started")
-        if blocking:
-            self._thread.join()
+        #if blocking:
+        #    self._thread.join()
 
     def stop(self):
         """Stop the main loop.  Loop can be restarted with ``start()`` after being stopped."""
-        self._running = False
-        try:
-            self._thread.join()
-        except AttributeError:  # Already garbage collected
-            pass
-        self._thread = None
+        #self._running = False
+        #try:
+        #    self._thread.join()
+        #except AttributeError:  # Already garbage collected
+        #    pass
+        #self._thread = None
         logger.info("ChordEventLoop stopped")
 
     def _loop(self):  # This is only necessary because pygame doesn't support callbacks.  TODO consider using rtmidi?
-        with self.port as inport:
-            while self._running:
-                for msg in inport.iter_pending():
-                    self._mido_callback(msg)
+        while self._running:
+            for msg in self.port.iter_pending():
+                self._mido_callback(msg)
 
     def _mido_callback(self, msg):
         if msg.type == "note_on" and msg.velocity > 0:  # Key down

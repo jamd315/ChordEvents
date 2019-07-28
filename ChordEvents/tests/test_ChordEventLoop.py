@@ -42,7 +42,7 @@ class test_ChordEventLoop(unittest.TestCase):
         self.loopback.create_msg(mido.Message("note_on", note=67, velocity=0))
         
 
-        time.sleep(TEST_CHORD_DELAY)  # 10x the default polling speed
+        time.sleep(TEST_CHORD_DELAY)
         self.assertFalse(self.CEL.down_notes)  # assert empty
         mock.assert_called()
         self.CEL.clear_handlers()
