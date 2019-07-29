@@ -1,15 +1,19 @@
-import time
-import mido
+import logging
 import queue
+import time
 import unittest
 import unittest.mock
 
-from ChordEvents import LoopbackPort, ChordEventLoop, Chord, Note
+import mido
+
+from ChordEvents import Chord, ChordEventLoop, LoopbackPort, Note
 
 # Prevents a race condition while testing with a non-callback backend.  Runs on both to make inheritance easier.
 # Can run as low as 0.005, but lots of stdout content or other lag can cause problems.
 # Since it only delays once per test function, a higher value isn't too costly at this time.
 TEST_CHORD_DELAY = 0.1
+
+logger = logging.getLogger("ChordEvents")
 
 
 def press_chord(loopback, chord_obj, direction=None):
@@ -84,9 +88,28 @@ class ChordEventLoop_base_tests:
         press_chord(self.loopback, c1)
         time.sleep(TEST_CHORD_DELAY)
         mock1.assert_called()
+
         press_chord(self.loopback, c2)
         time.sleep(TEST_CHORD_DELAY)
         mock2.assert_called()
+    
+    def test_remove_handler(self):
+        mock1 = unittest.mock.Mock()
+        mock2 = unittest.mock.Mock()
+        c1 = Chord(Note(20), Note(40), Note(60))
+        c2 = Chord(Note(30), Note(40), Note(50))
+        self.CEL.add_chord_handler(mock1, c1)
+        self.CEL.add_chord_handler(mock2, c2)
+
+        self.CEL.clear_handlers(c2)
+
+        press_chord(self.loopback, c1)
+        time.sleep(TEST_CHORD_DELAY)
+        mock1.assert_called()
+
+        press_chord(self.loopback, c2)
+        time.sleep(TEST_CHORD_DELAY)
+        mock2.assert_not_called()
 
 
 class test_ChordEventLoop_rtmidi(unittest.TestCase, ChordEventLoop_base_tests):
@@ -94,6 +117,10 @@ class test_ChordEventLoop_rtmidi(unittest.TestCase, ChordEventLoop_base_tests):
         self.loopback = LoopbackPort()
         mido.set_backend("mido.backends.rtmidi", load=True)
         self.CEL = ChordEventLoop(port=self.loopback)
+    
+    def test_warn_on_callbacks_enabled(self):
+        with self.assertLogs(logger=logger, level="WARNING"):
+            self.CEL.start()
 
 
 class test_ChordEventLoop_pygame(unittest.TestCase, ChordEventLoop_base_tests):

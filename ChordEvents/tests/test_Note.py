@@ -1,9 +1,11 @@
+import logging
 import unittest
 
 from ChordEvents import Note
 
+logger = logging.getLogger("ChordEvents")
 
-class Test_Note(unittest.TestCase):
+class test_Note(unittest.TestCase):
 
     def test_init(self):
         self.assertEqual(Note("A4").midi, 69)
@@ -47,3 +49,7 @@ class Test_Note(unittest.TestCase):
         self.assertEqual(Note("A-1").freq, 13.75)
         self.assertEqual(Note("Cb4").freq, 246.94)
         self.assertEqual(Note("B3").freq, 246.94)
+    
+    def test_MIDI_range_warn(self):
+        with self.assertLogs(logger=logger, level="WARNING"):
+            Note("A11")

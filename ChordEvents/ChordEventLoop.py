@@ -6,7 +6,7 @@ from collections import namedtuple
 import mido
 
 import ChordEvents
-from ChordEvents import Note, Chord
+from ChordEvents import Chord, Note
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +21,6 @@ class ChordEventLoop:
         down_notes: ``set`` of down notes
         handlers: ``dict`` of chords mapped to a list of of handlers
         port: mido port being used
-    
-    TODO:
-        Need a way to remove specific event handlers
     """
 
     def __init__(self, port="default"):
@@ -67,18 +64,28 @@ class ChordEventLoop:
             chord_obj: Chord name as string, as output from ``Chord.identify()``, or ``Chord`` object
             func: Function to call when the chord is detected.  Will be spawned in a new daemon thread.
         """
-        if isinstance(chord_obj, str):
-            chord_obj = Chord.from_ident(chord_obj)
+        chord_obj = self._resolve_chord_obj(chord_obj)
         try:
             self.handlers[chord_obj] += func
         except KeyError:
             self.handlers[chord_obj] = [func]
         logger.debug("Added handler for chord {}".format(chord_obj))
     
-    def clear_handlers(self):
-        """Clear all chord handlers"""
-        self.handlers = dict()
-        logger.info("Cleared handlers")
+    def clear_handlers(self, chord_obj=None):
+        """Clear handlers for a given ``chord_obj``.  Default is to clear all handlers if ``chord_obj`` is not specified.
+        
+        Args:
+            chord_obj: Chord name as string, as output from ``Chord.identify()``, or ``Chord`` object"""
+        if chord_obj is not None:
+            chord_obj = self._resolve_chord_obj(chord_obj)
+            try:
+                del self.handlers[chord_obj]
+                logger.debug("Cleared handlers for {}".format(chord_obj))
+            except KeyError:
+                pass
+        else:
+            self.handlers = dict()
+            logger.info("Cleared all handlers")
 
     def start(self, blocking=False):
         """Only required when backend doesn't support callbacks.  Start the main loop, required to process MIDI and trigger event handlers.  Loop can be stopped with ``stop()``.
@@ -133,3 +140,12 @@ class ChordEventLoop:
                 t.start()
         except KeyError:
             pass
+    
+    @staticmethod
+    def _resolve_chord_obj(chord_obj):
+        if isinstance(chord_obj, Chord):
+            return chord_obj
+        elif isinstance(chord_obj, str):
+            return Chord.from_ident(chord_obj)
+        else:
+            raise TypeError("Expected string chord name or Chord")
