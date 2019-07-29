@@ -53,3 +53,7 @@ class test_Note(unittest.TestCase):
     def test_MIDI_range_warn(self):
         with self.assertLogs(logger=logger, level="WARNING"):
             Note("A11")
+
+
+if __name__ == "__main__":
+    logger.warning("test")

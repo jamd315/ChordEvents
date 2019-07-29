@@ -8,7 +8,7 @@ import mido
 import ChordEvents
 from ChordEvents import Chord, Note
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ChordEvents")
 
 
 class ChordEventLoop:
@@ -101,7 +101,7 @@ class ChordEventLoop:
             if blocking:
                 self._thread.join()
         else:
-            logger.warn("Called start() while using a backend that supports callbacks.")
+            logger.warning("Called start() while using a backend that supports callbacks.")
 
     def stop(self):
         """Only required when backend doesn't support callbacks.  Stop the main loop.  Loop can be restarted with ``start()`` after being stopped."""
@@ -114,7 +114,7 @@ class ChordEventLoop:
             self._thread = None
             logger.info("ChordEventLoop thread stopped")
         else:
-            logger.warn("Called stop() while using a backend that supports callbacks.")
+            logger.warning("Called stop() while using a backend that supports callbacks.")
 
     def _loop(self):
         while self._running:

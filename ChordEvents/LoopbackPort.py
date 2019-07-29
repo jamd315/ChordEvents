@@ -3,7 +3,7 @@ import threading
 
 import mido
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ChordEvents")
 
 
 class LoopbackPort(mido.ports.BaseIOPort):

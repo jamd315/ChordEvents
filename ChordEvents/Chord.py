@@ -4,7 +4,7 @@ import os
 
 from ChordEvents import Note
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ChordEvents")
 
 
 class Chord:
