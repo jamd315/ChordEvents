@@ -11,7 +11,7 @@ class test_Note(unittest.TestCase):
         self.assertEqual(Note("A4").midi, 69)
         self.assertEqual(Note("Cb4").midi, 59)  # Underflow and decrement the octave
         self.assertEqual(Note("F#2").midi, 42)
-        self.assertEqual(Note("F#10").midi, 138)
+        self.assertEqual(Note("F#9").midi, 126)
 
         self.assertEqual(Note("A", 4).midi, 69)
         self.assertEqual(Note("Cb", 4).midi, 59)
@@ -22,6 +22,11 @@ class test_Note(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             Note([])
+    
+    def test_from_lowercase(self):
+        self.assertEqual(Note("a4").midi, 69)
+        self.assertEqual(Note("ab5").midi, 80)
+        self.assertEqual(Note("c#3").midi, 49)
 
     def test_string(self):
         n1 = Note("A4")

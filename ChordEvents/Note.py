@@ -67,8 +67,11 @@ class Note:
                 raise ValueError("Invalid entry for note_str")
             logger.debug("Note created using __init__ note_str")
 
+        if note:
+            note = note.upper()
+
         if note is not None and octave is not None:  # From note and octave
-            if len(note) == 2 and note[-1] == "b":  # Flat, convert to sharp
+            if len(note) == 2 and note[-1] == "B":  # Flat, convert to sharp
                 pc = self.pitch_class_map_complement[note[0]] - 1  # Decrement pitch class
                 if pc == -1:  # Underflow
                     note = "B"
