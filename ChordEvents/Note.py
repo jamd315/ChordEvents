@@ -1,3 +1,4 @@
+import re
 import logging
 
 logger = logging.getLogger(__name__)
@@ -56,12 +57,15 @@ class Note:
             raise TypeError("Passing both keyword arguments for note/octave/midi is not supported while using positional argument note_str")
         
         if note_str:  # Only supports single digit octave TODO
-            logger.debug("Note created using __init__ note_str")
-            note = note_str[:-1]
+            match = re.match("([a-zA-Z#b]+)([0-9-]+)", note_str)
+            if not match:
+                raise ValueError("Invalid entry for note_str")
             try:
-                octave = int(note_str[-1])
-            except ValueError:
-                raise ValueError("Missing octave number in note_str, note_str should end with the octave number.")
+                note = match.group(1)
+                octave = int(match.group(2))
+            except IndexError:
+                raise ValueError("Invalid entry for note_str")
+            logger.debug("Note created using __init__ note_str")
 
         if note is not None and octave is not None:  # From note and octave
             if len(note) == 2 and note[-1] == "b":  # Flat, convert to sharp
@@ -83,6 +87,8 @@ class Note:
             raise TypeError
         self.pc = self.pitch_class_map_complement[self.note]
         self.freq = 27.5 * 2 ** ((self.midi-21)/21)  # In Hz  TODO could be broken
+        if self.midi not in range(128):
+            logger.warning("Note created outside normal MIDI range of 0 to 127 (inclusive)")
 
     def __str__(self):
         return self.note + str(self.octave)
