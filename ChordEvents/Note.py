@@ -98,6 +98,8 @@ class Note:
             return False
         return self.midi == other.midi
 
+    def __hash__(self):
+        return hash(self.midi)
 
     @classmethod
     def _note_octave_to_midi(cls, note, octave):

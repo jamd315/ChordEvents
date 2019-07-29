@@ -10,7 +10,7 @@ from ChordEvents.__version__ import __version__
 from ChordEvents.Note import Note
 from ChordEvents.Chord import Chord
 from ChordEvents.ChordEventLoop import ChordEventLoop
-from ChordEvents.LoopbackPort import LoopbackPort  # Depends on the backend being loaded
+from ChordEvents.LoopbackPort import LoopbackPort
 
 colorama.init()
 
@@ -38,18 +38,17 @@ class ChordEventsLogFormatter(logging.Formatter):  # TODO I'm not sure if this g
         return outstr
 
 logger = logging.getLogger("ChordEvents")
-logger.setLevel("INFO")
+logger.setLevel("WARNING")
 sh = logging.StreamHandler()
 sh.setFormatter(ChordEventsLogFormatter)
 logger.addHandler(sh)
 
 
-mido.set_backend(load=True)
+mido.set_backend()  # environment var MIDO_BACKEND or default.  Unloaded
 def callbacks_supported():
-    mido.backend.load()
-    return hasattr(mido.backend._module.Input, "callback")  # Depends on the backend being loaded
+    return mido.backend.name in ["mido.backends.rtmidi", "mido.backends.rtmidi_python"]
 
-logger.info("Using backend '{}' from either default or environment variable.  Backed {} callbacks.".format(mido.backend.name, ("supports" if callbacks_supported() else "does not support")))
+logger.debug("Using backend '{}' from either default or environment variable.  Backed {} callbacks.".format(mido.backend.name, ("supports" if callbacks_supported() else "does not support")))
 
 
 __all__ = [

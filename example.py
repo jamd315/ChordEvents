@@ -1,5 +1,3 @@
-import time
-
 import mido
 import ChordEvents
 

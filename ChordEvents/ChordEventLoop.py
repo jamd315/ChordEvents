@@ -12,25 +12,22 @@ logger = logging.getLogger(__name__)
 
 
 class ChordEventLoop:
-    """The event loop that watches for chords and calls the event handlers
+    """The event loop that watches for chords and calls the event handlers.  Uses callbacks if the backend supports it.  Otherwise an internal loop will need to be started with ``start()`` and ``stop()``.
     
     Args:
         port: ``mido`` port.  Default is "default", which gets the 1st port from ``mido.get_input_names()``.  Also accepts strings as returned form ``mido.get_input_names()``.
     
     Attributes:
-        down_notes: ``set()`` of down notes
-        handlers: list of handlers, see ``ChordEventLoop.EventHandler``
+        down_notes: ``set`` of down notes
+        handlers: ``dict`` of chords mapped to a list of of handlers
         port: mido port being used
     
     TODO:
         Need a way to remove specific event handlers
     """
 
-    EventHandler = namedtuple("EventHandler", ["chord_obj", "func"])
-    """Used to represent an event handler."""
-
     def __init__(self, port="default"):
-        self.handlers = []
+        self.handlers = dict()
         self.down_notes = set()
         if port == "default":
             try:
@@ -44,7 +41,7 @@ class ChordEventLoop:
         else:
             raise ValueError("Expected mido port or string name compatible with ``mido.open_input()``")
         if ChordEvents.callbacks_supported():
-            self.port.callback = self._mido_callback
+            self.port.callback = self._callback
         else:
             self._running = False
             self._thread = None
@@ -70,19 +67,25 @@ class ChordEventLoop:
             chord_obj: Chord name as string, as output from ``Chord.identify()``, or ``Chord`` object
             func: Function to call when the chord is detected.  Will be spawned in a new daemon thread.
         """
-        logger.info("Added handler for chord {}".format(chord_obj))
-        self.handlers.append(self.EventHandler(chord_obj, func))
+        if isinstance(chord_obj, str):
+            chord_obj = Chord.from_ident(chord_obj)
+        try:
+            self.handlers[chord_obj] += func
+        except KeyError:
+            self.handlers[chord_obj] = [func]
+        logger.debug("Added handler for chord {}".format(chord_obj))
     
     def clear_handlers(self):
         """Clear all chord handlers"""
+        self.handlers = dict()
         logger.info("Cleared handlers")
-        self.handlers = []
 
     def start(self, blocking=False):
         """Only required when backend doesn't support callbacks.  Start the main loop, required to process MIDI and trigger event handlers.  Loop can be stopped with ``stop()``.
         
         Args:
-            blocking: Default False.  Determines if this call will be blocking, requiring the ``stop()`` function to be called from an event handler."""
+            blocking: Default False.  Determines if this call will be blocking, requiring the ``stop()`` function to be called from an event handler.
+        """
         if not ChordEvents.callbacks_supported():
             self._running = True
             self._thread = threading.Thread(target=self._loop, name="ChordEventLoop thread")
@@ -109,9 +112,9 @@ class ChordEventLoop:
     def _loop(self):
         while self._running:
             for msg in self.port.iter_pending():
-                self._mido_callback(msg)
+                self._callback(msg)
 
-    def _mido_callback(self, msg):
+    def _callback(self, msg):
         if msg.type == "note_on" and msg.velocity > 0:  # Key down
             self.down_notes.add(msg.note)
             self._check_handlers()
@@ -122,10 +125,11 @@ class ChordEventLoop:
     
     def _check_handlers(self):
         test_chord = Chord.from_midi_list(self.down_notes)
-        identified = test_chord.identify()
-        for handler in self.handlers:
-            if handler.chord_obj == test_chord or handler.chord_obj in identified:
-                logger.info("Triggered handler for chord {}".format(handler.chord_obj))
-                t = threading.Thread(target=handler.func)
+        try:
+            for func in self.handlers[test_chord]:
+                logger.debug("Triggered handler for chord {}".format(test_chord))
+                t = threading.Thread(target=func)
                 t.daemon = True
                 t.start()
+        except KeyError:
+            pass

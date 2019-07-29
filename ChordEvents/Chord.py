@@ -8,21 +8,28 @@ logger = logging.getLogger(__name__)
 
 
 class Chord:
-    """Contains Note objects, as well as functions to analyze chords.  Accepts either a single list/tuple of notes, or a bunch of notes.  Typically contructed using ``from_ascii()`` or ``from_midi_list()``.
+    """Contains Note objects, as well as functions to analyze chords.  Accepts either a single iterable notes, or a bunch of notes.  Typically contructed using ``from_ascii()`` or ``from_midi_list()``.
 
     Attributes:
-        notes: List of ``Note`` objects
+        notes: Tuple of ``Note`` objects
 
     Args:
-        args: List of ``Note`` objects or multiple ``Note`` objects passed to constructor.
+        args: Iterable of ``Note`` objects or multiple ``Note`` objects passed to constructor.  Order doesn't matter.
     """
     with open(os.path.join(os.path.split(__file__)[0], "chords.json"), "r") as f:
         chords = json.load(f)["chords"]
         
     def __init__(self, *args):
         self.notes = self._parse_note_args(args)
-        self.notes = sorted(self.notes)
         logger.debug("Chord created using __init__")
+    
+    @property
+    def notes(self):
+        return self._notes
+
+    @notes.setter
+    def notes(self, notes):
+        self._notes = tuple(sorted(notes))  # Tuple makes hashing work.
 
     def __repr__(self):
         return "Chord(" + ", ".join(str(x) for x in self.notes) + ")"
@@ -36,6 +43,9 @@ class Chord:
         if len(self.notes) != len(other.notes):
             return False
         return all(x == y for x, y in zip(self.notes, other.notes))
+    
+    def __hash__(self):
+        return hash(self.notes)  # Assumes that self.notes is a tuple, which it should be unless self._notes was modified externally.
 
     def identify(self):
         """Identify what chord this is.  Most chords from this list are valid.  https://en.wikipedia.org/wiki/List_of_chords
@@ -117,7 +127,6 @@ class Chord:
 
     @staticmethod
     def _parse_note_args(note_args):
-        """Process args tuple into nice Note() list"""
         try:
             if all(isinstance(x, Note) for x in note_args):
                 return note_args

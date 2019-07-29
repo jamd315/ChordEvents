@@ -6,7 +6,7 @@ An easy to use library used to trigger functions when a chord is detected on a M
 
 #### Requirements
 
-Uses ``colorama`` to make pretty logs, should install automatically.  Uses python-rtmidi for the backend by default.  See [the python-rtmidi installation requirements](https://spotlightkid.github.io/python-rtmidi/installation.html#requirements)
+Uses ``colorama`` to make pretty logs, should install automatically.  Uses ``python-rtmidi`` for the backend by default.  See [the python-rtmidi installation requirements](https://spotlightkid.github.io/python-rtmidi/installation.html#requirements)
 
 After reqirements have been satisfied
 ```pip install ChordEvents```
@@ -25,8 +25,6 @@ Windows is trickier, see [the python-rtmidi Windows install instructions](https:
 -------------
 
 ```python
-import time
-
 import mido
 import ChordEvents
 
