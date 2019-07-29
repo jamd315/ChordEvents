@@ -9,6 +9,7 @@ class Test_Note(unittest.TestCase):
         self.assertEqual(Note("A4").midi, 69)
         self.assertEqual(Note("Cb4").midi, 59)  # Underflow and decrement the octave
         self.assertEqual(Note("F#2").midi, 42)
+        self.assertEqual(Note("F#10").midi, 138)
 
         self.assertEqual(Note("A", 4).midi, 69)
         self.assertEqual(Note("Cb", 4).midi, 59)
