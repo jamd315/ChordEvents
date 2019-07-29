@@ -1,5 +1,4 @@
 import logging
-import queue
 import time
 import unittest
 import unittest.mock

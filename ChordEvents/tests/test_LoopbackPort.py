@@ -1,11 +1,9 @@
-import queue
-import time
 import unittest
 import unittest.mock
 
 import mido
 
-from ChordEvents import Chord, ChordEventLoop, LoopbackPort, Note
+from ChordEvents import LoopbackPort
 
 
 class test_LoopbackPort(unittest.TestCase):
