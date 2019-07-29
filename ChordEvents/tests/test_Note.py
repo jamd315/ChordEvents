@@ -39,3 +39,11 @@ class Test_Note(unittest.TestCase):
         n1 = Note("A4")
         n2 = Note(69)
         self.assertEqual(n1, n2)
+    
+    def test_freq(self):
+        self.assertEqual(Note("A4").freq, 440.00)
+        self.assertEqual(Note("C6").freq, 1046.50)
+        self.assertEqual(Note("C0").freq, 16.35)
+        self.assertEqual(Note("A-1").freq, 13.75)
+        self.assertEqual(Note("Cb4").freq, 246.94)
+        self.assertEqual(Note("B3").freq, 246.94)

@@ -56,7 +56,7 @@ class Note:
         if note_str and any(x is not None for x in [note, octave, midi]):
             raise TypeError("Passing both keyword arguments for note/octave/midi is not supported while using positional argument note_str")
         
-        if note_str:  # Only supports single digit octave TODO
+        if note_str:
             match = re.match("([a-zA-Z#b]+)([0-9-]+)", note_str)
             if not match:
                 raise ValueError("Invalid entry for note_str")
@@ -86,7 +86,7 @@ class Note:
         else:
             raise TypeError
         self.pc = self.pitch_class_map_complement[self.note]
-        self.freq = 27.5 * 2 ** ((self.midi-21)/21)  # In Hz  TODO could be broken
+        self.freq = round(2 ** ((self.midi - 69) / 12) * 440, 2)
         if self.midi not in range(128):
             logger.warning("Note created outside normal MIDI range of 0 to 127 (inclusive)")
 
