@@ -19,7 +19,7 @@ URL = 'https://github.com/jamd315/MIDIEvents'
 EMAIL = 'lizardswimmer@gmail.com'
 AUTHOR = 'jamd315'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = ''
+VERSION = '0.7.2-dev7'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -50,11 +50,6 @@ except FileNotFoundError:
 about = {}
 if not VERSION:
     project_slug = NAME.lower().replace("-", "_").replace(" ", "_")
-    print("\n"*5)
-    print(os.getcwd())
-    print(os.listdir())
-    print(os.listdir(project_slug))
-    print("\n"*5)
     with open(os.path.join(here, project_slug, '__version__.py')) as f:
         exec(f.read(), about)
 else:
