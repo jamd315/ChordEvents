@@ -53,6 +53,7 @@ if not VERSION:
     print("\n"*5)
     print(os.getcwd())
     print(os.listdir())
+    print(os.listdir(project_slug))
     print("\n"*5)
     with open(os.path.join(here, project_slug, '__version__.py')) as f:
         exec(f.read(), about)
