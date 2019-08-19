@@ -50,7 +50,10 @@ except FileNotFoundError:
 about = {}
 if not VERSION:
     project_slug = NAME.lower().replace("-", "_").replace(" ", "_")
+    print("\n"*5)
+    print(os.getcwd())
     print(os.listdir())
+    print("\n"*5)
     with open(os.path.join(here, project_slug, '__version__.py')) as f:
         exec(f.read(), about)
 else:
