@@ -2,6 +2,7 @@ import logging
 
 import mido
 
+from MIDIEvents.__version__ import __version__
 from MIDIEvents.LoopbackPort import LoopbackPort
 # This order matters
 from MIDIEvents.Note import Note
