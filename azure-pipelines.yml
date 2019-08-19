@@ -21,11 +21,11 @@ steps:
       pip -V
       python -V
     displayName: 'Check pip and python version for debugging this pipeline'
-  - script: pip install colorama, coverage, pytest, flake8
+  - script: pip install colorama coverage pytest flake8
     displayName: 'Install development packages'
   - script: sudo apt install -y build-essential python-dev python3-dev libasound2-dev libjack-jackd2-dev
     displayName: 'Install python-rtmidi dependencies'
-  - script: pip install mido, pygame, python-rtmidi
+  - script: pip install mido pygame python-rtmidi
     displayName: 'Install dependencies'
   - script: setup.py install
     displayName: 'Install MIDIEvents'
