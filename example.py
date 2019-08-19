@@ -1,4 +1,3 @@
-import mido
 import MIDIEvents
 
 MEL = MIDIEvents.MIDIEventLoop()

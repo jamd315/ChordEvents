@@ -123,4 +123,4 @@ class Note:
         m -= 12  # C0 is midi 12
         octave, note = divmod(m, 12)
         note = cls.pitch_class_map[note]
-        return (note, octave)
+        return note, octave

@@ -35,6 +35,7 @@ class TestChord(unittest.TestCase):
     def test_from_ident(self):
         c1 = Chord(Note(69), Note(73), Note(76))
         c2 = Chord.from_ident("A4 Major")
+        self.assertEqual(c1, c2)
         with self.assertRaises(AssertionError):
             Chord.from_ident("")
         with self.assertRaises(ValueError):

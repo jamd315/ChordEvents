@@ -11,10 +11,10 @@ class LoopbackPort(mido.ports.BaseIOPort):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._callback = None
-    
+
     def _open(self, callback=None):
         self._callback_lock = threading.RLock()
-    
+
     def _send(self, msg):
         if self._callback:
             self._callback(msg)
@@ -33,5 +33,4 @@ class LoopbackPort(mido.ports.BaseIOPort):
             if func:
                 for msg in self.iter_pending():
                     func(msg)
-                
             self._callback = func

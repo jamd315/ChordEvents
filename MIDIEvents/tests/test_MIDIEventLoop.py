@@ -229,7 +229,6 @@ class MIDIEventLoop_base_tests:
         chord_mock.assert_called()
         sequence_mock.assert_called()
 
-
     def test_no_ports(self):
         with self.assertRaises(RuntimeError):
             MIDIEventLoop()

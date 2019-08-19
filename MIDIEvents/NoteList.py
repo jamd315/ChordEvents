@@ -72,4 +72,3 @@ class NoteList:
         Args:
             midi_list: List of integers represnting MIDI note codes"""
         return cls([Note(x) for x in midi_list])
-

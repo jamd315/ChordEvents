@@ -23,12 +23,12 @@ VERSION = ''
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'mido', 'pygame', 'colorama', 'coverage'
+    'mido', 'pygame', 'python-rtmidi'
 ]
 
 # What packages are optional?
 EXTRAS = {
-    # 'fancy feature': ['django'],
+    'dev': ['colorama', 'coverage', 'pytest', 'flake8']
 }
 
 # The rest you shouldn't have to touch too much :)

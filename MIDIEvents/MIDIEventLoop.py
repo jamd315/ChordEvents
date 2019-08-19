@@ -5,17 +5,17 @@ from collections import deque
 import mido
 
 import MIDIEvents
-from MIDIEvents import Chord, NoteList, Sequence
+from MIDIEvents import Chord, Sequence
 
 logger = logging.getLogger("MIDIEvents")
 
 
 class MIDIEventLoop:
     """The event loop that watches for ``Chord``s or ``Sequence``s and calls the event handlers.  Uses callbacks if the backend supports it.  Otherwise an internal loop will need to be started with ``start()`` and ``stop()``.
-    
+
     Args:
         port: ``mido`` port.  Default is "default", which gets the 1st port from ``mido.get_input_names()``.  Also accepts strings as returned form ``mido.get_input_names()``.
-    
+
     Attributes:
         down_notes: ``set`` of notes that are currently down.  Used to determine when a ``Chord`` is being pressed.
         recent_notes: ``deque`` of the last n notes, n is the ``maxlen`` class attribute of the ``Sequence`` class.

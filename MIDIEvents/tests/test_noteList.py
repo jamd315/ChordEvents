@@ -15,7 +15,7 @@ class TestNoteList(TestCase):
         self.assertEqual(NoteList(nl1), nl1)
 
     def test_init_from_int(self):
-        nl1 = NoteList(1,2,3)
+        nl1 = NoteList(1, 2, 3)
         nl2 = NoteList(Note(1), Note(2), Note(3))
         self.assertEqual(nl1, nl2)
 
@@ -28,7 +28,6 @@ class TestNoteList(TestCase):
             NoteList(notes)
         with self.assertRaises(TypeError):  # Expected iterable of Notes or NoteList
             NoteList(object())
-
 
     def test_from_ascii(self):
         expected = (Note(69), Note(73), Note(76))
@@ -45,4 +44,3 @@ class TestNoteList(TestCase):
         notes = (Note(10), Note(15), Note(20))  # Sorted to emulate NoteList.notes setter method
         nl1 = NoteList(notes)
         self.assertEqual(hash(notes), hash(nl1))
-
