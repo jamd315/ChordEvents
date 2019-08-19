@@ -1,9 +1,4 @@
 # Starter pipeline
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.x'
-    addToPath: true
-    architecture: 'x64'
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
@@ -15,6 +10,11 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      addToPath: true
+      architecture: 'x64'
   - script: python -m pip install --upgrade pip setuptools wheel
     displayName: 'Install tools'
   - script: |
