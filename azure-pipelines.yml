@@ -10,13 +10,15 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  - script: python -m pip install --upgrade pip setuptools wheel
+  - script: python -m pip3 install --upgrade pip setuptools wheel
     displayName: 'Install tools'
-  - script: pip install colorama, coverage, pytest, flake8
+  - script: pip -V
+    displayName: 'Check pip version for debugging this pipeline'
+  - script: pip3 install colorama, coverage, pytest, flake8
     displayName: 'Install development packages'
   - script: sudo apt install -y build-essential python-dev python3-dev libasound2-dev libjack-jackd2-dev
     displayName: 'Install python-rtmidi dependencies'
-  - script: pip install mido, pygame, python-rtmidi
+  - script: pip3 install mido, pygame, python-rtmidi
     displayName: 'Install dependencies'
   - script: setup.py install
     displayName: 'Install MIDIEvents'
