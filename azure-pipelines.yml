@@ -23,5 +23,9 @@ steps:
     displayName: 'Install python-rtmidi dependencies'
   - script: pip install mido pygame python-rtmidi
     displayName: 'Install dependencies'
-  - script: sudo ./setup.py install
+  - task: PythonScript@0
+    inputs:
+      scriptSource: 'filePath'
+      scriptPath: 'setup.py'
+      arguments: 'install'
     displayName: 'Install MIDIEvents'
