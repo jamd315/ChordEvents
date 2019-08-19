@@ -2,7 +2,7 @@
 
 
 function Get-VersionNumber {
-    (Get-Content .\ChordEvents\__version__.py) -match "(?<=`")([0-9])\.([0-9])\.([0-9])(?=`")"
+    (Get-Content .\MIDIEvents\__version__.py) -match "(?<=`")([0-9])\.([0-9])\.([0-9])(?=`")"
     return [PSCustomObject]@{
         Major = [int]$matches.1
         Minor = [int]$matches.2
@@ -25,7 +25,7 @@ function Set-VersionNumber {
         [int]
         $Build
     )
-    Set-Content .\ChordEvents\__version__.py "__version__ = `"$Major.$Minor.$Build`""
+    Set-Content .\MIDIEvents\__version__.py "__version__ = `"$Major.$Minor.$Build`""
 }
 
 $v = Get-VersionNumber
@@ -66,13 +66,10 @@ if (-not $?) {
     exit 
 }
 
-# Run tests
-python -m unittest -q
-if (-not $?) { 
-    Write-Error "Failed tests"
-    Start-Sleep 5
-    exit 
-}
+# Run tests and get coverage
+coverage run ./run_tests.py
+coverage html
+./htmlcov/index.html
 
 # Build wheel
 .\setup.py sdist bdist_wheel

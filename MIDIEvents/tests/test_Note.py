@@ -1,12 +1,12 @@
 import logging
 import unittest
 
-from ChordEvents import Note
+from MIDIEvents import Note
 
-logger = logging.getLogger("ChordEvents")
+logger = logging.getLogger("MIDIEvents")
 
-class test_Note(unittest.TestCase):
 
+class TestNote(unittest.TestCase):
     def test_init(self):
         self.assertEqual(Note("A4").midi, 69)
         self.assertEqual(Note("Cb4").midi, 59)  # Underflow and decrement the octave
@@ -20,8 +20,16 @@ class test_Note(unittest.TestCase):
         self.assertEqual(Note(69).pc, 9)
         self.assertEqual(Note(69).octave, 4)
 
+        self.assertEqual(Note(69), Note(4, "A"))
+
         with self.assertRaises(TypeError):
             Note([])
+
+        with self.assertRaises(TypeError):
+            Note(note_str="A4", midi=69)
+
+        with self.assertRaises(ValueError):
+            Note(note_str="4A")
     
     def test_from_lowercase(self):
         self.assertEqual(Note("a4").midi, 69)
@@ -46,6 +54,7 @@ class test_Note(unittest.TestCase):
         n1 = Note("A4")
         n2 = Note(69)
         self.assertEqual(n1, n2)
+        self.assertNotEqual(n1, True)
     
     def test_freq(self):
         self.assertEqual(Note("A4").freq, 440.00)
@@ -58,7 +67,3 @@ class test_Note(unittest.TestCase):
     def test_MIDI_range_warn(self):
         with self.assertLogs(logger=logger, level="WARNING"):
             Note("A11")
-
-
-if __name__ == "__main__":
-    logger.warning("test")

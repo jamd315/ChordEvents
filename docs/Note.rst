@@ -1,5 +1,5 @@
 Note class API reference
 ========================
 
-.. autoclass:: ChordEvents.Note
+.. autoclass:: MIDIEvents.Note
     :members:

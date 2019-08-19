@@ -3,10 +3,10 @@ import unittest.mock
 
 import mido
 
-from ChordEvents import LoopbackPort
+from MIDIEvents import LoopbackPort
 
 
-class test_LoopbackPort(unittest.TestCase):
+class TestLoopbackPort(unittest.TestCase):
     def setUp(self):
         self.loopback = LoopbackPort()
 

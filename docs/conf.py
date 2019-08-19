@@ -21,7 +21,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(".."))
 
-project = 'ChordEvents'
+project = 'MIDIEvents'
 copyright = '2019, jamd315'
 author = 'jamd315'
 

@@ -1,7 +1,7 @@
 import logging
 import re
 
-logger = logging.getLogger("ChordEvents")
+logger = logging.getLogger("MIDIEvents")
 
 
 class Note:
@@ -14,7 +14,7 @@ class Note:
         pc: Pitch class, see https://en.wikipedia.org/wiki/Pitch_class#Integer_notation
         octave: Octave number for the note
         midi: MIDI note number
-        freq: Frequency of the note in Hz, might be broken
+        freq: Frequency of the note in Hz
     
     Args:
         note_str: String with ASCII representation of note.  Can use sharp(#) and flat(b) accidentals.  e.g. Note("A4"), Note("C#2")  Can't be used with any other argument
@@ -60,11 +60,8 @@ class Note:
             match = re.match("([a-zA-Z#b]+)([0-9-]+)", note_str)
             if not match:
                 raise ValueError("Invalid entry for note_str")
-            try:
-                note = match.group(1)
-                octave = int(match.group(2))
-            except IndexError:
-                raise ValueError("Invalid entry for note_str")
+            note = match.group(1)
+            octave = int(match.group(2))
             logger.debug("Note created using __init__ note_str")
 
         if note:
@@ -103,7 +100,7 @@ class Note:
         return self.midi > other.midi
     
     def __eq__(self, other):
-        if not isinstance(other, Note):
+        if not isinstance(other, self.__class__):
             return False
         return self.midi == other.midi
 

@@ -3,7 +3,7 @@ import threading
 
 import mido
 
-logger = logging.getLogger("ChordEvents")
+logger = logging.getLogger("MIDIEvents")
 
 
 class LoopbackPort(mido.ports.BaseIOPort):
@@ -12,7 +12,7 @@ class LoopbackPort(mido.ports.BaseIOPort):
         super().__init__(*args, **kwargs)
         self._callback = None
     
-    def _open(self, callback = None):
+    def _open(self, callback=None):
         self._callback_lock = threading.RLock()
     
     def _send(self, msg):

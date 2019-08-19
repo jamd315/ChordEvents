@@ -13,9 +13,9 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'ChordEvents'
-DESCRIPTION = 'Event loop that triggers functions when a chord is played on a MIDI controller.'
-URL = 'https://github.com/jamd315/ChordEvents'
+NAME = 'MIDIEvents'
+DESCRIPTION = 'Event loop that triggers functions when a chord or sequence is played on a MIDI controller.'
+URL = 'https://github.com/jamd315/MIDIEvents'
 EMAIL = 'lizardswimmer@gmail.com'
 AUTHOR = 'jamd315'
 REQUIRES_PYTHON = '>=3.6.0'
@@ -23,7 +23,7 @@ VERSION = ''
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'mido', 'pygame', 'colorama'
+    'mido', 'pygame', 'colorama', 'coverage'
 ]
 
 # What packages are optional?
@@ -112,7 +112,7 @@ setup(
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
     data_files=[
-        ('.', ['ChordEvents/chords.json'])
+        ('.', ['MIDIEvents/chords.json'])
     ],
     install_requires=REQUIRED,
     extras_require=EXTRAS,

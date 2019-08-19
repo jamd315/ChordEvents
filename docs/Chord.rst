@@ -1,5 +1,5 @@
 Chord class API reference
 =========================
 
-.. autoclass:: ChordEvents.Chord
+.. autoclass:: MIDIEvents.Chord
     :members:

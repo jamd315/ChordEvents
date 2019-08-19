@@ -1,5 +1,5 @@
 LoopbackPort class API reference
 ================================
 
-.. autoclass:: ChordEvents.LoopbackPort
+.. autoclass:: MIDIEvents.LoopbackPort
     :members:
