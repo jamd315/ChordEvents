@@ -6,13 +6,15 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+variables:
+  vmImageName: 'ubuntu-latest'
 
 stages:
 - stage: 'Build'
   jobs:
   - job: 'Build'
+    pool:
+      vmImage: $(vmImageName)
     steps:
       - task: UsePythonVersion@0
         inputs:
@@ -62,6 +64,8 @@ stages:
   condition: succeeded()
   jobs:
   - deployment: 'Deploy'
+    pool:
+      vmImage: $(vmImageName)
     strategy:
       runOnce:
         deploy:
