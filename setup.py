@@ -19,7 +19,7 @@ URL = 'https://github.com/jamd315/MIDIEvents'
 EMAIL = 'lizardswimmer@gmail.com'
 AUTHOR = 'jamd315'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.7.2-dev7'
+VERSION = '0.7.2-dev10'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
