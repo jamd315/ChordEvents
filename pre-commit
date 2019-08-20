@@ -1,0 +1,7 @@
+#!/bin/sh
+# hardlinked to .git/hooks
+bumpversion build --allow-dirty
+git add __version__.py
+git add MIDIEvents/__version__.py
+git add setup.py
+git add .bumpversion.cfg
