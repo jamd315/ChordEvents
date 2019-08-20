@@ -65,7 +65,7 @@ stages:
         displayName: 'Upload to PyPI Test'
 
 
-- stage: Deploy to PyPI test
+- stage: Deploy_PyPI_Test
   dependsOn: 'Build'
   condition: succeeded()
   jobs:
