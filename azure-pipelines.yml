@@ -62,7 +62,7 @@ stages:
           ArtifactName: 'Wheel'
           publishLocation: 'Container'
       - script: twine upload -u $(TWINE_USERNAME) -p $(TWINE_PASSWORD) --repository-url https://test.pypi.org/legacy/ dist/*
-          displayName: 'Upload to PyPI Test'
+        displayName: 'Upload to PyPI Test'
 
 
 - stage: Deploy to PyPI test
