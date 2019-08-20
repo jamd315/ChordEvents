@@ -58,7 +58,7 @@ stages:
         displayName: 'Build wheel'
       - task: PublishBuildArtifacts@1
         inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)/dist'
+          PathtoPublish: '$(System.DefaultWorkingDirectory)/dist'
           ArtifactName: 'Wheel'
           publishLocation: 'Container'
       - script: twine upload -u $(TWINE_USERNAME) -p $(TWINE_PASSWORD) --repository-url https://test.pypi.org/legacy/ dist/*
