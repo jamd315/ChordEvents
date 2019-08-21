@@ -66,6 +66,8 @@ stages:
 
 
 - stage: Deploy
+  variables:
+    System.Debug: true
   dependsOn: 'Build'
   condition: succeeded()
   jobs:
