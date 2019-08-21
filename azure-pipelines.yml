@@ -8,10 +8,11 @@ trigger:
 
 variables:
   vmImageName: 'ubuntu-latest'
-  System.Debug: true
 
 stages:
 - stage: 'Build'
+  variables:
+    System.Debug: true
   jobs:
   - job: 'Test, Lint, and Build'
     pool:
