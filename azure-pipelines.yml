@@ -58,11 +58,10 @@ stages:
           scriptPath: 'setup.py'
           arguments: 'sdist bdist_wheel'
         displayName: 'Build wheel'
-      - task: PublishBuildArtifacts@1
+      - task: PublishPipelineArtifact@1
         inputs:
-          PathtoPublish: '$(System.DefaultWorkingDirectory)/dist'
-          ArtifactName: 'Wheel'
-          publishLocation: 'Container'
+          path: '$(System.DefaultWorkingDirectory)/dist'
+          artifact: 'Wheel'
 
 
 - stage: Deploy
