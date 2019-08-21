@@ -14,7 +14,7 @@ stages:
   variables:
     System.Debug: true
   jobs:
-  - job: 'Test, Lint, and Build'
+  - job: 'Build'
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -69,7 +69,7 @@ stages:
   dependsOn: 'Build'
   condition: succeeded()
   jobs:
-  - deployment: 'Deploy to PyPI Test'
+  - deployment: 'PyPI_Test'
     pool:
       vmImage: $(vmImageName)
     environment: 'Staging'
