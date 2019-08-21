@@ -8,8 +8,7 @@ trigger:
 
 variables:
   vmImageName: 'ubuntu-latest'
-  System:
-    Debug: true
+  System.Debug: true
 
 stages:
 - stage: 'Build'
