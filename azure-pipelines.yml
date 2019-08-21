@@ -8,11 +8,13 @@ trigger:
 
 variables:
   vmImageName: 'ubuntu-latest'
+  System:
+    Debug: true
 
 stages:
 - stage: 'Build'
   jobs:
-  - job: 'Build'
+  - job: 'Test, Lint, and Build'
     pool:
       vmImage: $(vmImageName)
     steps:
@@ -61,15 +63,13 @@ stages:
           PathtoPublish: '$(System.DefaultWorkingDirectory)/dist'
           ArtifactName: 'Wheel'
           publishLocation: 'Container'
-      - script: twine upload -u $(TWINE_USERNAME) -p $(TWINE_PASSWORD) --repository-url https://test.pypi.org/legacy/ dist/*
-        displayName: 'Upload to PyPI Test'
 
 
-- stage: Deploy_PyPI_Test
+- stage: Deploy
   dependsOn: 'Build'
   condition: succeeded()
   jobs:
-  - deployment: 'Deploy'
+  - deployment: 'Deploy to PyPI Test'
     pool:
       vmImage: $(vmImageName)
     environment: 'Staging'
@@ -79,3 +79,5 @@ stages:
           steps:
           - script: echo test123
             displayName: 'Testing this bit'
+          - script: twine upload -u $(TWINE_USERNAME) -p $(TWINE_PASSWORD) --repository-url https://test.pypi.org/legacy/ dist/*
+            displayName: 'Upload to PyPI Test'
