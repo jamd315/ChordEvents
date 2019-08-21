@@ -51,4 +51,4 @@ steps:
       arguments: 'sdist bdist_wheel'
     displayName: 'Build wheel'
   - script: twine upload -u $(TWINE_USERNAME) -p $(TWINE_PASSWORD) --repository-url https://test.pypi.org/legacy/ dist/*
-      displayName: 'Upload to PyPI Test'
+    displayName: 'Upload to PyPI Test'
