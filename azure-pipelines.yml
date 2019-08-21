@@ -6,86 +6,49 @@
 trigger:
 - master
 
-variables:
-  vmImageName: 'ubuntu-latest'
+pool:
+  vmImage: 'ubuntu-latest'
 
-stages:
-- stage: 'Build'
-  variables:
-    System.Debug: true
-  jobs:
-  - job: 'Build'
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: '3.x'
-          addToPath: true
-          architecture: 'x64'
-      - script: python -m pip install --upgrade pip setuptools wheel
-        displayName: 'Install tools'
-      - script: pip install pytest pytest-cov flake8
-        displayName: 'Install development packages'
-      - script: sudo apt-get install -y build-essential python-dev python3-dev libasound2-dev libjack-jackd2-dev
-        displayName: 'Install python-rtmidi dependencies'
-      - script: pip install mido pygame python-rtmidi
-        displayName: 'Install dependencies'
-      - task: PythonScript@0
-        inputs:
-          scriptSource: 'filePath'
-          scriptPath: 'setup.py'
-          arguments: 'install'
-        displayName: 'Install MIDIEvents'
-      - script: flake8 --ignore E501,W293
-        displayName: 'Run flake8'
-      - script: pytest -v --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
-        displayName: 'Run tests and coverage'
-      - task: PublishTestResults@2
-        condition: succeededOrFailed()
-        inputs:
-          testResultsFiles: '**/test-*.xml'
-          testRunTitle: 'Publish test results for Python $(python.version)'
-        displayName: 'Publish testing results'
-      - task: PublishCodeCoverageResults@1
-        inputs:
-          codeCoverageTool: Cobertura
-          summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-        displayName: 'Publish coverage results'
-      - task: PythonScript@0
-        inputs:
-          scriptSource: 'filePath'
-          scriptPath: 'setup.py'
-          arguments: 'sdist bdist_wheel'
-        displayName: 'Build wheel'
-      - task: PublishPipelineArtifact@1
-        inputs:
-          path: '$(System.DefaultWorkingDirectory)/dist'
-          artifact: 'Wheel'
-
-
-- stage: Deploy
-  variables:
-    System.Debug: true
-  dependsOn: 'Build'
-  condition: succeeded()
-  jobs:
-  - deployment: 'PyPI_Test'
-    pool:
-      vmImage: $(vmImageName)
-    environment: 'Staging'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.x'
-              addToPath: true
-              architecture: 'x64'
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              artifact: 'Wheel'
-          - script: pip install twine
-          - script: twine upload -u $(TWINE_USERNAME) -p $(TWINE_PASSWORD) --repository-url https://test.pypi.org/legacy/ dist/*
-            displayName: 'Upload to PyPI Test'
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      addToPath: true
+      architecture: 'x64'
+  - script: python -m pip install --upgrade pip setuptools wheel
+    displayName: 'Install tools'
+  - script: pip install pytest pytest-cov flake8 twine
+    displayName: 'Install development packages'
+  - script: sudo apt-get install -y build-essential python-dev python3-dev libasound2-dev libjack-jackd2-dev
+    displayName: 'Install python-rtmidi dependencies'
+  - script: pip install mido pygame python-rtmidi
+    displayName: 'Install dependencies'
+  - task: PythonScript@0
+    inputs:
+      scriptSource: 'filePath'
+      scriptPath: 'setup.py'
+      arguments: 'install'
+    displayName: 'Install MIDIEvents'
+  - script: flake8 --ignore E501,W293
+    displayName: 'Run flake8'
+  - script: pytest -v --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
+    displayName: 'Run tests and coverage'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '**/test-*.xml'
+      testRunTitle: 'Publish test results for Python $(python.version)'
+    displayName: 'Publish testing results'
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+    displayName: 'Publish coverage results'
+  - task: PythonScript@0
+    inputs:
+      scriptSource: 'filePath'
+      scriptPath: 'setup.py'
+      arguments: 'sdist bdist_wheel'
+    displayName: 'Build wheel'
+  - script: twine upload -u $(TWINE_USERNAME) -p $(TWINE_PASSWORD) --repository-url https://test.pypi.org/legacy/ dist/*
+      displayName: 'Upload to PyPI Test'
