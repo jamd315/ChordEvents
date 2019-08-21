@@ -25,7 +25,7 @@ stages:
           architecture: 'x64'
       - script: python -m pip install --upgrade pip setuptools wheel
         displayName: 'Install tools'
-      - script: pip install colorama pytest pytest-cov flake8 twine
+      - script: pip install pytest pytest-cov flake8
         displayName: 'Install development packages'
       - script: sudo apt-get install -y build-essential python-dev python3-dev libasound2-dev libjack-jackd2-dev
         displayName: 'Install python-rtmidi dependencies'
@@ -78,7 +78,12 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo test123
-            displayName: 'Testing this bit'
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.x'
+              addToPath: true
+              architecture: 'x64'
+          - download: 'Wheel'
+          - script: pip install twine
           - script: twine upload -u $(TWINE_USERNAME) -p $(TWINE_PASSWORD) --repository-url https://test.pypi.org/legacy/ dist/*
             displayName: 'Upload to PyPI Test'
