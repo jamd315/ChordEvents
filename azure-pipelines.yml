@@ -83,7 +83,9 @@ stages:
               versionSpec: '3.x'
               addToPath: true
               architecture: 'x64'
-          - download: 'Wheel'
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: 'Wheel'
           - script: pip install twine
           - script: twine upload -u $(TWINE_USERNAME) -p $(TWINE_PASSWORD) --repository-url https://test.pypi.org/legacy/ dist/*
             displayName: 'Upload to PyPI Test'
