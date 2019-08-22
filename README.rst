@@ -1,6 +1,3 @@
-.. role:: raw-html-m2r(raw)
-   :format: html
-
 ##########
 MIDIEvents
 ##########
@@ -28,7 +25,7 @@ After requirements have been satisfied
 Installing on Debian based Linux
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block::
+.. code-block:: bash
 
    sudo apt install build-essential python-dev python3-dev libasound2-dev libjack-jackd2-dev
    pip3 install python-rtmidi
