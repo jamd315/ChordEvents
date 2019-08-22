@@ -13,6 +13,8 @@ MOCK_MODULES = ["mido", "pygame", "python-rtmidi", "colorama"]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 
+master_doc = 'index'
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
