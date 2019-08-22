@@ -19,7 +19,7 @@ URL = 'https://github.com/jamd315/MIDIEvents'
 EMAIL = 'lizardswimmer@gmail.com'
 AUTHOR = 'jamd315'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.7.2-dev36'
+VERSION = '0.7.2-dev37'
 
 # What packages are required for this module to be executed?
 # REQUIRED = [
@@ -30,8 +30,7 @@ on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if on_rtd:
     REQUIRED = ['m2r']
 else:
-    with open('requirements.txt') as f:
-        REQUIRED = f.read().split('\n')
+    REQUIRED = ['mido', 'pygame', 'python-rtmidi', 'colorama']
 
 # What packages are optional?
 EXTRAS = {

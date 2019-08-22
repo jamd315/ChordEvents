@@ -1,4 +1,0 @@
-mido
-pygame
-python-rtmidi
-colorama
