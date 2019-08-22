@@ -6,15 +6,6 @@ logger = logging.getLogger("MIDIEvents")
 
 
 class NoteList:
-    """Base class that other note lists (e.g. ``Chord`` or ``Sequence``) inherit from.
-    
-    Attributes:
-        notes: Tuple of ``Note`` objects
-        max_depth: Default 3.  Class attribute.  Max depth to search for notes in input args.
-    
-    Args:
-        *args: Iterable of ``Note`` objects or multiple ``Note`` objects passed to constructor.  Also accepts a NoteList object.
-    """
     max_depth = 5  # Max depth to search for notes
 
     def __init__(self, *args):
@@ -56,19 +47,10 @@ class NoteList:
         self._notes = tuple(sorted(notes))
 
     @classmethod
-    def from_ascii(cls, note_string):
-        """Used to create a ``NoteList`` or child class from a string of notes.
-        
-        Args:
-            note_string: Space or comma-space separated ASCII notes
-        """
+    def from_ascii(cls, note_string):  # TODO note_string is similar to note_str in the Note class, maybe rename this?
         note_string = note_string.replace(",", "")
         return cls([Note(x) for x in note_string.split(" ")])
     
     @classmethod
     def from_midi_list(cls, midi_list):
-        """Used to create a ``NoteList`` or child class from a list of MIDI codes
-        
-        Args:
-            midi_list: List of integers represnting MIDI note codes"""
         return cls([Note(x) for x in midi_list])

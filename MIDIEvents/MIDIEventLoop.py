@@ -11,19 +11,6 @@ logger = logging.getLogger("MIDIEvents")
 
 
 class MIDIEventLoop:
-    """The event loop that watches for ``Chord``s or ``Sequence``s and calls the event handlers.  Uses callbacks if the backend supports it.  Otherwise an internal loop will need to be started with ``start()`` and ``stop()``.
-
-    Args:
-        port: ``mido`` port.  Default is "default", which gets the 1st port from ``mido.get_input_names()``.  Also accepts strings as returned form ``mido.get_input_names()``.
-
-    Attributes:
-        down_notes: ``set`` of notes that are currently down.  Used to determine when a ``Chord`` is being pressed.
-        recent_notes: ``deque`` of the last n notes, n is the ``maxlen`` class attribute of the ``Sequence`` class.
-        chord_handlers: ``dict`` of ``Chord``s mapped to a list of of handler functions.
-        sequence_handlers: ``dict`` of ``Sequence``s mapped to a list of handler functions.
-        port: ``mido`` port being used
-    """
-
     def __init__(self, port="default"):
         self.running_handler_threads = list()
         self.chord_handlers = dict()
@@ -55,19 +42,12 @@ class MIDIEventLoop:
             self.port.close()
 
     def on_notes(self, notes_obj):
-        """Decorator function similar to ``add_handler``"""
         def _sub(func):
             self.add_handler(func, notes_obj)
             return func
         return _sub
 
     def add_handler(self, func, notes_obj):
-        """Create a new event handler that runs the function when a chord is pressed
-        
-        Args:
-            func: Function to call when the chord is detected.  Will be spawned in a new daemon thread.
-            notes_obj: Object containing notes, such as ``Chord`` or ``Sequence``.  If a string is passed, will try to resolve to a ``Chord`` similar to the output of ``Chord.identify``.
-        """
         # Pre-process notes_obj
         notes_obj = self._resolve_notes_obj(notes_obj)
 
@@ -86,10 +66,6 @@ class MIDIEventLoop:
         logger.debug(f"Added handler for {notes_obj}")
 
     def clear_handlers(self, notes_obj=None):
-        """Clear ``chord_handlers`` and/or ``sequence_handlers`` for a given ``notes_obj``.  Default is to clear all handlers if ``notes_obj`` is not specified.
-        
-        Args:
-            notes_obj: Chord name as string, as output from ``Chord.identify()``, or ``Sequence`` or ``Chord`` object"""
         if notes_obj is not None:
             notes_obj = self._resolve_notes_obj(notes_obj)
             if notes_obj in self.chord_handlers:
@@ -104,11 +80,6 @@ class MIDIEventLoop:
             logger.info("Cleared all handlers")
 
     def start(self, blocking=False):
-        """Only required when backend doesn't support callbacks.  Start the main loop, required to process MIDI and trigger event chord_handlers.  Loop can be stopped with ``stop()``.
-        
-        Args:
-            blocking: Default False.  Determines if this call will be blocking, requiring the ``stop()`` function to be called from an event handler.
-        """
         if not MIDIEvents.callbacks_supported():
             self._running = True
             self._thread = threading.Thread(target=self._loop, name="MIDIEventLoop thread")
@@ -120,7 +91,6 @@ class MIDIEventLoop:
             logger.warning("Called start() while using a backend that supports callbacks.")
 
     def stop(self):
-        """Only required when backend doesn't support callbacks.  Stop the main loop.  Loop can be restarted with ``start()`` after being stopped."""
         if not MIDIEvents.callbacks_supported():
             self._running = False
             try:

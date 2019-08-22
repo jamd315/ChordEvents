@@ -5,23 +5,6 @@ logger = logging.getLogger("MIDIEvents")
 
 
 class Note:
-    """Represents a single note.
-
-    Can be created using keywords or implicitly.  1 string argument is mapped to ``note_str``, 1 str and 1 int arguments are mapped to ``note`` and ``octave``, 1 int argument is mapped to ``midi``.
-
-    Attributes:
-        note: The note letter, e.g. 'A' or 'F#'
-        pc: Pitch class, see https://en.wikipedia.org/wiki/Pitch_class#Integer_notation
-        octave: Octave number for the note
-        midi: MIDI note number
-        freq: Frequency of the note in Hz
-    
-    Args:
-        note_str: String with ASCII representation of note.  Can use sharp(#) and flat(b) accidentals.  e.g. Note("A4"), Note("C#2")  Can't be used with any other argument
-        note (str): See ``note`` attribute, must be used with ``octave`` argument
-        octave (int): See ``octave`` attribute, must be used with ``note`` argument
-        midi (int): See ``midi`` attribute.  Can't be used with any other argument.
-    """
     pitch_class_map = {  # Overflow is where octave changes
         0: 'C',
         1: 'C#',
@@ -109,7 +92,6 @@ class Note:
 
     @classmethod
     def _note_octave_to_midi(cls, note, octave):
-        """For use with the pitch_class_map class attribute"""
         assert isinstance(note, str)
         assert isinstance(octave, int)
         pc = cls.pitch_class_map_complement[note]
@@ -118,7 +100,6 @@ class Note:
 
     @classmethod
     def _midi_to_note_octave(cls, m):
-        """For use with the pitch_class_map class attribute"""
         assert isinstance(m, int)
         m -= 12  # C0 is midi 12
         octave, note = divmod(m, 12)

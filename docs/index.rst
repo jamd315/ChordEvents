@@ -1,13 +1,15 @@
-MIDIEvents
-===========
-See the readme at https://github.com/jamd315/MIDIEvents/blob/master/README.md
+.. mdinclude:: ../README.md
+
+Reference
+=========
 
 .. toctree::
-	:maxdepth: 2
-	:caption: Reference docs:
+   :maxdepth: 2
+   :caption: Contents:
 
-	Note <Note>
-	Chord <Chord>
-    Sequence <Sequence>
-	MIDIEventLoop <MIDIEventLoop>
-	LoopbackPort <LoopbackPort>
+   Note
+   NoteList
+   Chord
+   Sequence
+   MIDIEventLoop
+   LoopbackPort

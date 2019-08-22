@@ -17,10 +17,6 @@
 
 # -- Project information -----------------------------------------------------
 
-import os
-import sys
-sys.path.insert(0, os.path.abspath(".."))
-
 project = 'MIDIEvents'
 copyright = '2019, jamd315'
 author = 'jamd315'
@@ -32,9 +28,7 @@ author = 'jamd315'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.todo"
+    "m2r"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -56,5 +50,4 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = []  # Was throwing warnings, applied the following workaround
-# https://github.com/readthedocs/readthedocs.org/issues/1776#issuecomment-149684640
+html_static_path = ['_static']

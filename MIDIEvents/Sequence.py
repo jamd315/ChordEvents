@@ -7,7 +7,6 @@ logger = logging.getLogger("MIDIEvents")
 
 
 class Sequence(NoteList):
-    """Series of notes, essentially an ordered list."""
     maxlen = 16  # Max length to compare a deque to
 
     def __init__(self, *args):
