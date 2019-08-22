@@ -19,7 +19,7 @@ URL = 'https://github.com/jamd315/MIDIEvents'
 EMAIL = 'lizardswimmer@gmail.com'
 AUTHOR = 'jamd315'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.7.2-dev34'
+VERSION = '0.7.2-dev35'
 
 # What packages are required for this module to be executed?
 # REQUIRED = [
@@ -30,7 +30,7 @@ with open('requirements.txt') as f:
 
 # What packages are optional?
 EXTRAS = {
-    'dev': ['colorama', 'coverage', 'pytest', 'flake8']
+    'dev': ['colorama', 'coverage', 'pytest', 'flake8', 'm2r']
 }
 
 # The rest you shouldn't have to touch too much :)
