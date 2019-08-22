@@ -12,14 +12,18 @@ An easy to use library used to trigger functions when a chord is detected on a M
 
 Installation
 ============
+After requirements have been satisfied,
+``pip install MIDIEvents``
 
 Requirements
 ~~~~~~~~~~~~
 
-Uses ``colorama`` to make pretty logs, should install automatically.  Uses ``python-rtmidi`` for the backend by default.  See `the python-rtmidi installation requirements <https://spotlightkid.github.io/python-rtmidi/installation.html#requirements>`_
+Python requirements are installed automatically during installing.  python-rtmidi does require some additional C libraries that aren't installed during installation.
 
-After requirements have been satisfied
-``pip install MIDIEvents``
+* Uses `mido <https://mido.readthedocs.io/en/latest/>`_ for MIDI interface and low level notes.  Any MIDO backend is supported, but only those python-rtmidi and pygame are tested.
+* Uses `python-rtmidi <http://trac.chrisarndt.de/code/wiki/python-rtmidi>`_ for the backend by default.  See `the python-rtmidi installation requirements <https://spotlightkid.github.io/python-rtmidi/installation.html#requirements>`_.
+* Can also use `pygame <https://www.pygame.org>`_ as the backend, but won't support callbacks.
+* Uses `colorama <https://github.com/tartley/colorama>`_ to make pretty logs.
 
 
 Installing on Debian based Linux
