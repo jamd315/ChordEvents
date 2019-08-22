@@ -1,19 +1,21 @@
 ##########
 MIDIEvents
 ##########
-
-An easy to use library used to trigger functions when a chord is detected on a MIDI controller.  Currently still in development.
-
 .. image:: https://dev.azure.com/lizardswimmer/MIDIEvents/_apis/build/status/jamd315.MIDIEvents?branchName=master
    :target: https://dev.azure.com/lizardswimmer/MIDIEvents/_build/latest?definitionId=1&branchName=master
    :alt: Build Status
 
+.. image:: https://readthedocs.org/projects/midievents/badge/
+   :target: https://midievents.readthedocs.io/en/latest/
+   :alt: Documentation
 
+An easy to use library used to trigger functions when a chord is detected on a MIDI controller.  Currently still in development.
+
+Documentation on Read The Docs at https://midievents.readthedocs.io/en/latest/
 
 Installation
 ============
-After requirements have been satisfied,
-``pip install MIDIEvents``
+After requirements have been satisfied, ``pip install MIDIEvents``
 
 Requirements
 ~~~~~~~~~~~~
