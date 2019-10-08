@@ -9,6 +9,7 @@ from MIDIEvents.Note import Note
 from MIDIEvents.NoteList import NoteList
 from MIDIEvents.Chord import Chord
 from MIDIEvents.Sequence import Sequence
+from MIDIEvents.ChordSequence import ChordSequence
 from MIDIEvents.MIDIEventLoop import MIDIEventLoop
 
 __all__ = [

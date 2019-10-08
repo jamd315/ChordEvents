@@ -5,7 +5,7 @@ from collections import deque
 import mido
 
 import MIDIEvents
-from MIDIEvents import Chord, Sequence
+from MIDIEvents import Chord, Sequence, ChordSequence
 
 logger = logging.getLogger("MIDIEvents")
 
@@ -15,6 +15,7 @@ class MIDIEventLoop:
         self.running_handler_threads = list()
         self.chord_handlers = dict()
         self.sequence_handlers = dict()
+        self.chord_sequence_handlers = dict()
         self.down_notes = set()
         self.recent_notes = deque(maxlen=Sequence.maxlen)
         if port == "default":
@@ -63,6 +64,12 @@ class MIDIEventLoop:
             else:
                 self.chord_handlers[notes_obj] = [func]  # Create handler list for notes_obj with callback
 
+        if isinstance(notes_obj, ChordSequence):
+            if notes_obj in self.chord_sequence_handlers:
+                self.chord_sequence_handlers[notes_obj].append(func)
+            else:
+                self.chord_sequence_handlers[notes_obj] = [func]
+
         logger.debug(f"Added handler for {notes_obj}")
 
     def clear_handlers(self, notes_obj=None):
@@ -70,13 +77,17 @@ class MIDIEventLoop:
             notes_obj = self._resolve_notes_obj(notes_obj)
             if notes_obj in self.chord_handlers:
                 del self.chord_handlers[notes_obj]
-                logger.debug(f"Cleared chord_handlers for {notes_obj}")
-            if notes_obj in self.sequence_handlers:
+            elif notes_obj in self.sequence_handlers:
                 del self.sequence_handlers[notes_obj]
-                logger.debug(f"Cleared sequence_handlers for {notes_obj}")
+            elif notes_obj in self.chord_sequence_handlers:
+                del self.chord_sequence_handlers[notes_obj]
+            else:
+                raise RuntimeError(f"Failed to delete {notes_obj}")  # TODO test
+            logger.debug(f"Cleared sequence_handlers for {notes_obj}")
         else:
             self.chord_handlers = dict()
             self.sequence_handlers = dict()
+            self.chord_sequence_handlers = dict()
             logger.info("Cleared all handlers")
 
     def start(self, blocking=False):
@@ -118,22 +129,32 @@ class MIDIEventLoop:
             logger.debug(f"Note {msg.note} off")
     
     def _check_handlers(self):
-        """Search for handlers to trigger in self.chord_handlers and self.recent_notes (Sequence)"""
+        """Check the various handlers.  TODO make a way to configure what gets checked, for a speedup"""
+        self._check_chord_handlers()
+        self._check_sequence_handlers()
 
-        # Find the Chords.  Uses __hash__ to find them in a dictionary.
+    def _check_chord_handlers(self):
+        """Find the Chords.  Uses __hash__ to find them in a dictionary."""
         test_chord = Chord.from_midi_list(self.down_notes)
         if test_chord in self.chord_handlers:
             for func in self.chord_handlers[test_chord]:
                 logger.debug(f"Triggered handler for {test_chord}")
                 self._execute_handler(func)
 
-        # Find the Sequences.  Uses __eq__ to iterate over the sequence handlers and compare to recent notes.
-        # TODO investigate another way to do this that might be faster
+    def _check_sequence_handlers(self):
+        """
+        Find the Sequences.  Uses __eq__ to iterate over the sequence handlers and compare to recent notes.
+        TODO investigate another way to do this that might be faster
+        """
         for seq, func_list in self.sequence_handlers.items():
             if seq == self.recent_notes:
                 for func in func_list:
                     logger.debug(f"Triggered handler for {seq}")
                     self._execute_handler(func)
+
+    def _check_chord_sequence_handlers(self):
+        for c_seq, func_list in self.chord_sequence_handlers.items():
+            pass
 
     @staticmethod
     def _resolve_notes_obj(notes_obj):
