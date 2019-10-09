@@ -1,7 +1,7 @@
 from collections import deque
 
 
-class ChordSequence:
+class ChordProgression:
     maxlen = 32
 
     def __init__(self, *chords):

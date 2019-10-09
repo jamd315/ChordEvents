@@ -5,21 +5,21 @@ from collections import deque
 import mido
 
 import MIDIEvents
-from MIDIEvents import Chord, Sequence, ChordSequence
+from MIDIEvents import Chord, Sequence, ChordProgression
 
 logger = logging.getLogger("MIDIEvents")
 
 
 class MIDIEventLoop:
-    def __init__(self, port="default", check_chords=True, check_sequences=True, check_chord_sequences=True):
+    def __init__(self, port="default", check_chords=True, check_sequences=True, check_chord_progressions=True):
         self.check_chords = check_chords  # TODO test these bits
         self.check_sequences = check_sequences
-        self.check_chord_sequences = check_chord_sequences
+        self.check_chord_progressions = check_chord_progressions
         self.running_handler_threads = list()
         self.handlers = dict()
         self.down_notes = set()
         self.recent_notes = deque(maxlen=Sequence.maxlen)
-        self.recent_chords = deque(maxlen=ChordSequence.maxlen)
+        self.recent_chords = deque(maxlen=ChordProgression.maxlen)
         if port == "default":
             try:
                 self.port = mido.open_input(mido.get_input_names()[0])
@@ -116,8 +116,8 @@ class MIDIEventLoop:
             self._check_chord_handlers()
         if self.check_sequences:
             self._check_sequence_handlers()
-        if self.check_chord_sequences:
-            self._check_chord_sequence_handlers()
+        if self.check_chord_progressions:
+            self._check_chord_progression_handlers()
 
     def _check_chord_handlers(self):
         """Find the Chords.  Uses __hash__ to find them in a dictionary."""
@@ -140,9 +140,9 @@ class MIDIEventLoop:
                     logger.debug(f"Triggered handler for {seq}")
                     self._execute_handler(func)
 
-    def _check_chord_sequence_handlers(self):
+    def _check_chord_progression_handlers(self):
         for c_seq, func_list in self.handlers.items():
-            if not isinstance(c_seq, ChordSequence):
+            if not isinstance(c_seq, ChordProgression):
                 continue
             if c_seq.check_deque(self.recent_chords):
                 for func in func_list:
@@ -153,7 +153,7 @@ class MIDIEventLoop:
     def _resolve_notes_obj(notes_obj):
         if isinstance(notes_obj, str):
             notes_obj = Chord.from_ident(notes_obj)
-        if not (isinstance(notes_obj, Chord) or isinstance(notes_obj, Sequence) or isinstance(notes_obj, ChordSequence)):
+        if not (isinstance(notes_obj, Chord) or isinstance(notes_obj, Sequence) or isinstance(notes_obj, ChordProgression)):
             raise TypeError("Expected a Sequence or Chord")
         return notes_obj
     

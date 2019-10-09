@@ -5,7 +5,7 @@ import unittest.mock
 
 import mido
 
-from MIDIEvents import Chord, Sequence, MIDIEventLoop, LoopbackPort, Note, ChordSequence
+from MIDIEvents import Chord, Sequence, MIDIEventLoop, LoopbackPort, Note, ChordProgression
 
 # Prevents a race condition while testing with a non-callback backend.  Runs on both to make inheritance easier.
 # Can run as low as 0.005, but lots of stdout content or other lag can cause problems.
@@ -242,22 +242,22 @@ class MIDIEventLoop_base_tests:
         chord_mock.assert_called()
         sequence_mock.assert_called()
 
-    def test_chord_sequence_add_remove(self):
+    def test_chord_progression_add_remove(self):
         c1 = Chord.from_ident("A1 Major")
         c2 = Chord.from_ident("A2 Major")
         c3 = Chord.from_ident("A3 Major")
-        cs1 = ChordSequence(c1, c2, c3)
+        cs1 = ChordProgression(c1, c2, c3)
         mock = unittest.mock.Mock()
         self.MEL.add_handler(mock, cs1)
         self.assertTrue(self.MEL.handlers)
         self.MEL.clear_handlers()
         self.assertFalse(self.MEL.handlers)
 
-    def test_chord_sequence_callback(self):
+    def test_chord_progression_callback(self):
         c1 = Chord.from_ident("A1 Major")
         c2 = Chord.from_ident("A2 Major")
         c3 = Chord.from_ident("A3 Major")
-        cs1 = ChordSequence(c1, c2, c3)
+        cs1 = ChordProgression(c1, c2, c3)
         mock = unittest.mock.Mock()
         self.MEL.add_handler(mock, cs1)
         press_chord(self.loopback, c1)
@@ -266,15 +266,15 @@ class MIDIEventLoop_base_tests:
         time.sleep(TEST_CHORD_DELAY)
         mock.assert_called()
 
-    def test_chord_sequence_multiple_callback(self):
+    def test_chord_progression_multiple_callback(self):
         c1 = Chord.from_ident("A1 Major")
         c2 = Chord.from_ident("A2 Major")
         c3 = Chord.from_ident("A3 Major")
         c4 = Chord.from_ident("C1 Major")
         c5 = Chord.from_ident("C2 Major")
         c6 = Chord.from_ident("C3 Major")
-        cs1 = ChordSequence(c1, c2, c3)
-        cs2 = ChordSequence(c4, c5, c6)
+        cs1 = ChordProgression(c1, c2, c3)
+        cs2 = ChordProgression(c4, c5, c6)
         mock1 = unittest.mock.Mock()
         mock2 = unittest.mock.Mock()
         self.MEL.add_handler(mock1, cs1)
