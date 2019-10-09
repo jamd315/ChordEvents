@@ -5,18 +5,21 @@ from collections import deque
 import mido
 
 import MIDIEvents
-from MIDIEvents import Chord, Sequence
+from MIDIEvents import Chord, Sequence, ChordProgression
 
 logger = logging.getLogger("MIDIEvents")
 
 
 class MIDIEventLoop:
-    def __init__(self, port="default"):
+    def __init__(self, port="default", check_chords=True, check_sequences=True, check_chord_progressions=True):
+        self.check_chords = check_chords  # TODO test these bits
+        self.check_sequences = check_sequences
+        self.check_chord_progressions = check_chord_progressions
         self.running_handler_threads = list()
-        self.chord_handlers = dict()
-        self.sequence_handlers = dict()
+        self.handlers = dict()
         self.down_notes = set()
         self.recent_notes = deque(maxlen=Sequence.maxlen)
+        self.recent_chords = deque(maxlen=ChordProgression.maxlen)
         if port == "default":
             try:
                 self.port = mido.open_input(mido.get_input_names()[0])
@@ -51,32 +54,21 @@ class MIDIEventLoop:
         # Pre-process notes_obj
         notes_obj = self._resolve_notes_obj(notes_obj)
 
-        if isinstance(notes_obj, Sequence):
-            if notes_obj in self.sequence_handlers:
-                self.sequence_handlers[notes_obj].append(func)
-            else:
-                self.sequence_handlers[notes_obj] = [func]
-
-        if isinstance(notes_obj, Chord):
-            if notes_obj in self.chord_handlers:
-                self.chord_handlers[notes_obj].append(func)  # Append callback to handler list
-            else:
-                self.chord_handlers[notes_obj] = [func]  # Create handler list for notes_obj with callback
-
+        if notes_obj in self.handlers:
+            self.handlers[notes_obj].append(func)
+        else:
+            self.handlers[notes_obj] = [func]
         logger.debug(f"Added handler for {notes_obj}")
 
     def clear_handlers(self, notes_obj=None):
-        if notes_obj is not None:
+        if isinstance(notes_obj, type):  # If it's a class remove instances from handlers
+            self.handlers = {key: val for key, val in self.handlers.items() if not isinstance(key, notes_obj)}
+        elif notes_obj is not None:
             notes_obj = self._resolve_notes_obj(notes_obj)
-            if notes_obj in self.chord_handlers:
-                del self.chord_handlers[notes_obj]
-                logger.debug(f"Cleared chord_handlers for {notes_obj}")
-            if notes_obj in self.sequence_handlers:
-                del self.sequence_handlers[notes_obj]
-                logger.debug(f"Cleared sequence_handlers for {notes_obj}")
+            del self.handlers[notes_obj]
+            logger.debug(f"Cleared handlers for {notes_obj}")
         else:
-            self.chord_handlers = dict()
-            self.sequence_handlers = dict()
+            self.handlers = dict()
             logger.info("Cleared all handlers")
 
     def start(self, blocking=False):
@@ -111,35 +103,58 @@ class MIDIEventLoop:
         if msg.type == "note_on" and msg.velocity > 0:  # Key down
             self.recent_notes.append(msg.note)
             self.down_notes.add(msg.note)
-            self._check_handlers()
+            self.recent_chords.append(Chord.from_midi_list(self.down_notes))
             logger.debug(f"Note {msg.note} on")
+            self._check_handlers()
         elif msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0):  # Key up
             self.down_notes.remove(msg.note)
             logger.debug(f"Note {msg.note} off")
     
     def _check_handlers(self):
-        """Search for handlers to trigger in self.chord_handlers and self.recent_notes (Sequence)"""
+        """Check the various handlers."""
+        if self.check_chords:
+            self._check_chord_handlers()
+        if self.check_sequences:
+            self._check_sequence_handlers()
+        if self.check_chord_progressions:
+            self._check_chord_progression_handlers()
 
-        # Find the Chords.  Uses __hash__ to find them in a dictionary.
-        test_chord = Chord.from_midi_list(self.down_notes)
-        if test_chord in self.chord_handlers:
-            for func in self.chord_handlers[test_chord]:
+    def _check_chord_handlers(self):
+        """Find the Chords.  Uses __hash__ to find them in a dictionary."""
+        test_chord = self.recent_chords[-1]
+        if test_chord in self.handlers:
+            for func in self.handlers[test_chord]:
                 logger.debug(f"Triggered handler for {test_chord}")
                 self._execute_handler(func)
 
-        # Find the Sequences.  Uses __eq__ to iterate over the sequence handlers and compare to recent notes.
-        # TODO investigate another way to do this that might be faster
-        for seq, func_list in self.sequence_handlers.items():
+    def _check_sequence_handlers(self):
+        """
+        Find the Sequences.  Uses __eq__ to iterate over the sequence handlers and compare to recent notes.
+        TODO investigate another way to do this that might be faster
+        """
+        for seq, func_list in self.handlers.items():
+            if not isinstance(seq, Sequence):
+                continue
             if seq == self.recent_notes:
                 for func in func_list:
                     logger.debug(f"Triggered handler for {seq}")
+                    self._execute_handler(func)
+
+    def _check_chord_progression_handlers(self):
+        for c_seq, func_list in self.handlers.items():
+            if not isinstance(c_seq, ChordProgression):
+                continue
+            if c_seq.check_deque(self.recent_chords):
+                for func in func_list:
+                    logger.debug(f"Triggered handler for {c_seq}")
                     self._execute_handler(func)
 
     @staticmethod
     def _resolve_notes_obj(notes_obj):
         if isinstance(notes_obj, str):
             notes_obj = Chord.from_ident(notes_obj)
-        assert isinstance(notes_obj, Chord) or isinstance(notes_obj, Sequence), "Expected a Sequence or Chord"  # Just to make sure
+        if not (isinstance(notes_obj, Chord) or isinstance(notes_obj, Sequence) or isinstance(notes_obj, ChordProgression)):
+            raise TypeError("Expected a Sequence or Chord")
         return notes_obj
     
     def _execute_handler(self, func):
