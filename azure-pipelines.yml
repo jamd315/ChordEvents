@@ -29,8 +29,6 @@ steps:
       scriptPath: 'setup.py'
       arguments: 'install'
     displayName: 'Install MIDIEvents'
-  - script: flake8 --ignore E501,W293
-    displayName: 'Run flake8'
   - script: pytest -v --junitxml=junit/test-results.xml --cov --cov-report=xml --cov-report=html
     displayName: 'Run tests and coverage'
   - task: PublishTestResults@2
