@@ -11,5 +11,6 @@ Reference
    NoteList
    Chord
    Sequence
+   ChordProgression
    MIDIEventLoop
    LoopbackPort

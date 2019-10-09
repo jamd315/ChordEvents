@@ -34,7 +34,7 @@ else:
 
 # What packages are optional?
 EXTRAS = {
-    'dev': ['colorama', 'coverage', 'pytest', 'flake8', 'm2r']
+    'dev': ['colorama', 'coverage', 'pytest', 'flake8', 'm2r', 'bump2version']
 }
 
 # The rest you shouldn't have to touch too much :)

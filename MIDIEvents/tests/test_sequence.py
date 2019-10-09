@@ -45,6 +45,8 @@ class TestSequence(TestCase):
         for n in notes:
             notes_deque.append(n)
         self.assertEqual(seq1, notes_deque)
+        notes_deque.append(Note(51))
+        self.assertNotEqual(seq1, notes_deque)
 
     def test_eq_notelist(self):
         notes = (Note(15), Note(10), Note(20))

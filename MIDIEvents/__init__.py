@@ -9,6 +9,7 @@ from MIDIEvents.Note import Note
 from MIDIEvents.NoteList import NoteList
 from MIDIEvents.Chord import Chord
 from MIDIEvents.Sequence import Sequence
+from MIDIEvents.ChordProgression import ChordProgression
 from MIDIEvents.MIDIEventLoop import MIDIEventLoop
 
 __all__ = [
@@ -16,6 +17,7 @@ __all__ = [
     "NoteList",
     "Chord",
     "Sequence",
+    "ChordProgression",
     "MIDIEventLoop",
     "LoopbackPort"
 ]
