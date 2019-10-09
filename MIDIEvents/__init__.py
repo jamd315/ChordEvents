@@ -17,6 +17,7 @@ __all__ = [
     "NoteList",
     "Chord",
     "Sequence",
+    "ChordSequence",
     "MIDIEventLoop",
     "LoopbackPort"
 ]

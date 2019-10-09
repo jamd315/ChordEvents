@@ -5,7 +5,7 @@ import unittest.mock
 
 import mido
 
-from MIDIEvents import Chord, Sequence, MIDIEventLoop, LoopbackPort, Note
+from MIDIEvents import Chord, Sequence, MIDIEventLoop, LoopbackPort, Note, ChordSequence
 
 # Prevents a race condition while testing with a non-callback backend.  Runs on both to make inheritance easier.
 # Can run as low as 0.005, but lots of stdout content or other lag can cause problems.
@@ -40,19 +40,19 @@ class MIDIEventLoop_base_tests:
 
     def test_decorator_string(self):
         mock = unittest.mock.Mock()
-        self.assertFalse(self.MEL.chord_handlers)  # Empty
+        self.assertFalse(self.MEL.handlers)  # Empty
 
         @self.MEL.on_notes("C4 Major")
         def sub():  # pragma: no cover
             mock()
 
-        self.assertTrue(self.MEL.chord_handlers)  # Not empty
+        self.assertTrue(self.MEL.handlers)  # Not empty
         press_chord(self.loopback, Chord.from_ident("C4 Major"))
         mock.assert_called()
 
     def test_decorator_chord(self):
         mock = unittest.mock.Mock()
-        self.assertFalse(self.MEL.chord_handlers)  # Empty
+        self.assertFalse(self.MEL.handlers)  # Empty
 
         c1 = Chord(Note(5), Note(10), Note(15))
 
@@ -60,13 +60,13 @@ class MIDIEventLoop_base_tests:
         def sub():
             mock()
 
-        self.assertTrue(self.MEL.chord_handlers)  # Not empty
+        self.assertTrue(self.MEL.handlers)  # Not empty
         press_chord(self.loopback, c1)
         mock.assert_called()
 
     def test_decorator_sequence(self):
         mock = unittest.mock.Mock()
-        self.assertFalse(self.MEL.sequence_handlers)  # Empty
+        self.assertFalse(self.MEL.handlers)  # Empty
 
         seq1 = Sequence(Note(5), Note(10), Note(15))
 
@@ -75,7 +75,7 @@ class MIDIEventLoop_base_tests:
             mock()
 
         press_sequence(self.loopback, seq1)
-        self.assertTrue(self.MEL.sequence_handlers)  # Not empty
+        self.assertTrue(self.MEL.handlers)  # Not empty
         mock.assert_called()
 
     def test_chord_handlers_add_remove(self):
@@ -83,40 +83,53 @@ class MIDIEventLoop_base_tests:
         mock2 = unittest.mock.Mock()
         c1 = Chord.from_ident("C4 Major")
         c2 = Chord.from_ident("C5 Minor")
-        self.assertFalse(self.MEL.chord_handlers)  # Empty
+        self.assertFalse(self.MEL.handlers)  # Empty
         self.MEL.add_handler(mock1, c1)
-        self.assertTrue(self.MEL.chord_handlers)  # Not empty
+        self.assertTrue(self.MEL.handlers)  # Not empty
         self.MEL.clear_handlers()
-        self.assertFalse(self.MEL.chord_handlers)
+        self.assertFalse(self.MEL.handlers)
         # Now test a single removal
         self.MEL.add_handler(mock1, c1)
         self.MEL.add_handler(mock2, c2)
-        self.assertTrue(self.MEL.chord_handlers)  # Not empty
-        self.assertIn(c1, self.MEL.chord_handlers)
-        self.assertIn(c2, self.MEL.chord_handlers)
+        self.assertTrue(self.MEL.handlers)  # Not empty
+        self.assertIn(c1, self.MEL.handlers)
+        self.assertIn(c2, self.MEL.handlers)
         self.MEL.clear_handlers(c1)
-        self.assertNotIn(c1, self.MEL.chord_handlers)
-        self.assertIn(c2, self.MEL.chord_handlers)
+        self.assertNotIn(c1, self.MEL.handlers)
+        self.assertIn(c2, self.MEL.handlers)
+
+    def test_handler_remove_class(self):
+        mock1 = unittest.mock.Mock()
+        mock2 = unittest.mock.Mock()
+        c1 = Chord.from_ident("C4 Major")
+        s1 = Sequence.from_midi_list([1, 2, 3])
+        self.MEL.add_handler(mock1, c1)
+        self.MEL.add_handler(mock2, s1)
+        self.assertIn(c1, self.MEL.handlers)
+        self.assertIn(s1, self.MEL.handlers)
+        self.MEL.clear_handlers(Chord)
+        self.assertNotIn(c1, self.MEL.handlers)
+        self.assertIn(s1, self.MEL.handlers)
 
     def test_sequence_handlers_add_remove(self):
         mock1 = unittest.mock.Mock()
         mock2 = unittest.mock.Mock()
         seq1 = Sequence(Note(1), Note(2), Note(3))
         seq2 = Sequence(Note(4), Note(5), Note(6))
-        self.assertFalse(self.MEL.sequence_handlers)  # Empty
+        self.assertFalse(self.MEL.handlers)  # Empty
         self.MEL.add_handler(mock1, seq1)
-        self.assertTrue(self.MEL.sequence_handlers)  # Not empty
+        self.assertTrue(self.MEL.handlers)  # Not empty
         self.MEL.clear_handlers()
-        self.assertFalse(self.MEL.sequence_handlers)
+        self.assertFalse(self.MEL.handlers)
         # Now test a single removal
         self.MEL.add_handler(mock1, seq1)
         self.MEL.add_handler(mock2, seq2)
-        self.assertTrue(self.MEL.sequence_handlers)  # Not empty
-        self.assertIn(seq1, self.MEL.sequence_handlers)
-        self.assertIn(seq2, self.MEL.sequence_handlers)
+        self.assertTrue(self.MEL.handlers)  # Not empty
+        self.assertIn(seq1, self.MEL.handlers)
+        self.assertIn(seq2, self.MEL.handlers)
         self.MEL.clear_handlers(seq1)
-        self.assertNotIn(seq1, self.MEL.sequence_handlers)
-        self.assertIn(seq2, self.MEL.sequence_handlers)
+        self.assertNotIn(seq1, self.MEL.handlers)
+        self.assertIn(seq2, self.MEL.handlers)
 
     def test_note_on(self):
         """Test that notes are released when a 0 velocity ``note_on`` message is received"""
@@ -149,7 +162,7 @@ class MIDIEventLoop_base_tests:
     def test_trigger_on_custom_chord(self):
         mock = unittest.mock.Mock()
         chord = Chord.from_midi_list([20, 40, 60])
-        self.assertFalse(self.MEL.chord_handlers)  # Empty check
+        self.assertFalse(self.MEL.handlers)  # Empty check
         self.MEL.add_handler(mock, chord)
 
         press_chord(self.loopback, chord)
@@ -158,7 +171,7 @@ class MIDIEventLoop_base_tests:
     def test_trigger_on_sequence(self):
         mock = unittest.mock.Mock()
         seq1 = Sequence(Note(1), Note(2), Note(3))
-        self.assertFalse(self.MEL.chord_handlers)  # Empty check
+        self.assertFalse(self.MEL.handlers)  # Empty check
         self.MEL.add_handler(mock, seq1)
 
         press_sequence(self.loopback, seq1)
@@ -228,6 +241,55 @@ class MIDIEventLoop_base_tests:
         press_chord(self.loopback, c1)  # Should trigger both
         chord_mock.assert_called()
         sequence_mock.assert_called()
+
+    def test_chord_sequence_add_remove(self):
+        c1 = Chord.from_ident("A1 Major")
+        c2 = Chord.from_ident("A2 Major")
+        c3 = Chord.from_ident("A3 Major")
+        cs1 = ChordSequence(c1, c2, c3)
+        mock = unittest.mock.Mock()
+        self.MEL.add_handler(mock, cs1)
+        self.assertTrue(self.MEL.handlers)
+        self.MEL.clear_handlers()
+        self.assertFalse(self.MEL.handlers)
+
+    def test_chord_sequence_callback(self):
+        c1 = Chord.from_ident("A1 Major")
+        c2 = Chord.from_ident("A2 Major")
+        c3 = Chord.from_ident("A3 Major")
+        cs1 = ChordSequence(c1, c2, c3)
+        mock = unittest.mock.Mock()
+        self.MEL.add_handler(mock, cs1)
+        press_chord(self.loopback, c1)
+        press_chord(self.loopback, c2)
+        press_chord(self.loopback, c3)
+        time.sleep(TEST_CHORD_DELAY)
+        mock.assert_called()
+
+    def test_chord_sequence_multiple_callback(self):
+        c1 = Chord.from_ident("A1 Major")
+        c2 = Chord.from_ident("A2 Major")
+        c3 = Chord.from_ident("A3 Major")
+        c4 = Chord.from_ident("C1 Major")
+        c5 = Chord.from_ident("C2 Major")
+        c6 = Chord.from_ident("C3 Major")
+        cs1 = ChordSequence(c1, c2, c3)
+        cs2 = ChordSequence(c4, c5, c6)
+        mock1 = unittest.mock.Mock()
+        mock2 = unittest.mock.Mock()
+        self.MEL.add_handler(mock1, cs1)
+        self.MEL.add_handler(mock2, cs2)
+        press_chord(self.loopback, c1)
+        press_chord(self.loopback, c2)
+        press_chord(self.loopback, c3)
+        time.sleep(TEST_CHORD_DELAY)
+        mock1.assert_called()
+        press_chord(self.loopback, c4)
+        press_chord(self.loopback, c5)
+        press_chord(self.loopback, c6)
+        time.sleep(TEST_CHORD_DELAY)
+        mock2.assert_called()
+
 
     def test_no_ports(self):
         with self.assertRaises(RuntimeError):
